@@ -1,3 +1,4 @@
+
 # Changelog
 
 All notable, unreleased changes to this project will be documented in this file. For the released changes, please visit the [Releases](https://github.com/mirumee/saleor/releases) page.
@@ -37,6 +38,9 @@ All notable, unreleased changes to this project will be documented in this file.
 - Allow seeing unconfirmed orders - #7072 by @IKarbowiak
 - Raise GraphQLError when too big integer value is provided - #7076 by @IKarbowiak
 - Performance upgrade on orders query with shipping and billing addresses - #7083 by @tomaszszymanski129
+- Extend Vatlayer functionalities - #7101 by @korycins:
+    - Allow users to enter a list of exceptions (country ISO codes) that will use the source country rather than the destination country for tax purposes.
+    - Allow users to enter a list of countries for which no VAT will be added.
 
 ### Breaking
 - Multichannel MVP: Multicurrency - #6242 by @fowczarek @d-wysocki
