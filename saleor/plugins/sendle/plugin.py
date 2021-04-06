@@ -193,3 +193,61 @@ class SendlePlugin(BasePlugin):
         return self._calculate_checkout_shipping(
             currency, checkout, lines, base_shipping_price
         )
+
+    def order_fully_paid(
+        self,
+        order: "Order",
+        previous_value: any
+    ):
+        DATA = {
+            "weight": {
+                "value":str.split(str(order.weight))[0],
+                "units": "kg"
+            },
+            "first_mile_option": "pickup",
+            "description": "sample description",
+            "receiver": {
+                "instructions": "sample instructions",
+                "contact": {
+                    "name" : 'customer',
+                },
+                "address": {
+                    "address_line1": order.shipping_address.street_address_1,
+                    "suburb": order.shipping_address.city,
+                    "state_name": order.shipping_address.country_area,
+                    "postcode": order.shipping_address.postal_code,
+                    "country": "Australia"
+                }
+            },
+            "sender": {
+                "contact": {
+                    "name": "Naturals"
+                },
+                "address": {
+                    "address_line1": "Naturals Warehouse",
+                    "suburb": "North Strathfield",
+                    "state_name": "NSW",
+                    "postcode": "2137",
+                    "country": "Australia"
+                }
+            }
+        }
+        HEADERS = {'Content-Type': 'application/json'}
+
+        AUTH = (
+            'sujeeshsvalath_gmail',
+            '6bWNSdTGHYBdFRqvXWD3T8bD'
+        )
+
+        print("\n\n\n\data: ",DATA)
+
+        response = requests.post(
+            url = "https://sandbox.sendle.com/api/orders",
+            headers = HEADERS,
+            auth = AUTH,
+            json = DATA
+        )
+
+        # print("\n\n\n\nresponse: ",response.json())
+
+
