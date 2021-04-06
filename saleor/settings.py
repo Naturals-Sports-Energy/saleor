@@ -352,8 +352,8 @@ AUTH_PASSWORD_VALIDATORS = [
     }
 ]
 
-DEFAULT_COUNTRY = os.environ.get("DEFAULT_COUNTRY", "US")
-DEFAULT_CURRENCY = os.environ.get("DEFAULT_CURRENCY", "USD")
+DEFAULT_COUNTRY = 'AU'
+DEFAULT_CURRENCY = 'AUD'
 DEFAULT_DECIMAL_PLACES = 3
 DEFAULT_MAX_DIGITS = 12
 DEFAULT_CURRENCY_CODE_LENGTH = 3
@@ -506,6 +506,7 @@ GRAPHENE = {
 PLUGINS_MANAGER = "saleor.plugins.manager.PluginsManager"
 
 PLUGINS = [
+    "saleor.plugins.sendle.plugin.SendlePlugin"
     "saleor.plugins.avatax.plugin.AvataxPlugin",
     "saleor.plugins.vatlayer.plugin.VatlayerPlugin",
     "saleor.plugins.webhook.plugin.WebhookPlugin",
