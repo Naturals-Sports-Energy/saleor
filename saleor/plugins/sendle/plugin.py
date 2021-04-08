@@ -232,15 +232,12 @@ class SendlePlugin(BasePlugin):
                 }
             }
         }
-        HEADERS = {'Content-Type': 'application/json'}
+        HEADERS = {'Content-Type': 'application/json','Idempotency-Key': str(order.id)}
 
         AUTH = (
             'sujeeshsvalath_gmail',
             '6bWNSdTGHYBdFRqvXWD3T8bD'
         )
-
-        print("\n\n\n\data: ",DATA)
-
         response = requests.post(
             url = "https://sandbox.sendle.com/api/orders",
             headers = HEADERS,
