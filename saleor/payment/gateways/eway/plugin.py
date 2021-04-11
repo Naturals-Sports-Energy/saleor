@@ -142,7 +142,7 @@ class EwayGatewayPlugin(BasePlugin):
             url=URL,
             auth=USER
         )
-        print("*********************************\nResponse: ", Eway response.json())
+        print("*********************************\n Eway Response: ",response.json())
 
         status = response.json()['TransactionStatus']
         transaction_id = response.json()['TransactionID']
