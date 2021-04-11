@@ -136,8 +136,10 @@ class EwayGatewayPlugin(BasePlugin):
         self, payment_information: "PaymentData", previous_value
     ) -> "GatewayResponse":
         acces_code = payment_information.token
+        print("eway access code: ", acces_code)
         USER = ('F9802C65WIIJoC71srjdgq5kiMuTHDnRDK3ror9fXmZJzcH/LDTElbYEq0g22XW9cfEe+0','Fmv4KH8y')
         URL = 'https://api.sandbox.ewaypayments.com/AccessCode/'+acces_code
+        print("eway url: ", url)
         response = requests.get(
             url=URL,
             auth=USER
