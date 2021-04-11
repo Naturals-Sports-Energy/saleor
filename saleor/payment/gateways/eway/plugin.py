@@ -135,10 +135,12 @@ class EwayGatewayPlugin(BasePlugin):
     def process_payment(
         self, payment_information: "PaymentData", previous_value
     ) -> "GatewayResponse":
-        acces_code = payment_information.token
-        print("eway access code: ", acces_code)
+        payment_data = payment_information.data
+        print("eway payment_data", payment_data)
+        access_code = payment_data.get("AccessCode")
+        print("eway access code: ", access_code)
         USER = ('F9802C65WIIJoC71srjdgq5kiMuTHDnRDK3ror9fXmZJzcH/LDTElbYEq0g22XW9cfEe+0','Fmv4KH8y')
-        URL = 'https://api.sandbox.ewaypayments.com/AccessCode/'+acces_code
+        URL = 'https://api.sandbox.ewaypayments.com/AccessCode/'+access_code
         print("eway url: ", URL)
         response = requests.get(
             url=URL,
