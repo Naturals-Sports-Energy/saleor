@@ -35,7 +35,7 @@ def require_active_plugin(fn):
 class DummyGatewayPlugin(BasePlugin):
     PLUGIN_ID = "mirumee.payments.dummy"
     PLUGIN_NAME = GATEWAY_NAME
-    DEFAULT_ACTIVE = True
+    DEFAULT_ACTIVE = False
     DEFAULT_CONFIGURATION = [
         {"name": "Store customers card", "value": False},
         {"name": "Automatic payment capture", "value": True},

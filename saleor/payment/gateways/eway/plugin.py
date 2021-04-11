@@ -135,7 +135,26 @@ class EwayGatewayPlugin(BasePlugin):
     def process_payment(
         self, payment_information: "PaymentData", previous_value
     ) -> "GatewayResponse":
-        return process_payment(payment_information, self._get_gateway_config())
+        acces_code = payment_information.token
+        USER = ('F9802C65WIIJoC71srjdgq5kiMuTHDnRDK3ror9fXmZJzcH/LDTElbYEq0g22XW9cfEe+0','Fmv4KH8y')
+        URL = 'https://api.sandbox.ewaypayments.com/AccessCode/'+acces_code
+        response = requests.get(
+            url=URL,
+            auth=USER
+        )
+
+        status = response.json()['TransactionStatus']
+        transaction_id = response.json()['TransactionID']
+
+        return GatewayResponse(
+            is_success = status,
+            action_required = False,
+            amount=payment_information.amount,
+            currency=payment_information.currency,
+            transaction_id=transaction_id,
+            kind=TransactionKind.CAPTURE
+        )
+        # return process_payment(payment_information, self._get_gateway_config())
 
     @require_active_plugin
     def get_client_token(self, token_config: "TokenConfig", previous_value):
