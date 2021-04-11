@@ -157,7 +157,8 @@ class EwayGatewayPlugin(BasePlugin):
             amount=payment_information.amount,
             currency=payment_information.currency,
             transaction_id=transaction_id,
-            kind=TransactionKind.CAPTURE
+            kind=TransactionKind.CAPTURE,
+            error=None
         )
         # return process_payment(payment_information, self._get_gateway_config())
 
