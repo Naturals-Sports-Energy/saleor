@@ -81,6 +81,7 @@ class PluginsManager(PaymentInterface):
         method. If plugin doesn't have own implementation of expected method_name, it
         will return previous_value.
         """
+        print("************************\nmethod name = ",method_name)
         plugin_method = getattr(plugin, method_name, NotImplemented)
         if plugin_method == NotImplemented:
             return previous_value
