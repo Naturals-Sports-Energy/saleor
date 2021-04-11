@@ -139,7 +139,7 @@ class EwayGatewayPlugin(BasePlugin):
         print("eway access code: ", acces_code)
         USER = ('F9802C65WIIJoC71srjdgq5kiMuTHDnRDK3ror9fXmZJzcH/LDTElbYEq0g22XW9cfEe+0','Fmv4KH8y')
         URL = 'https://api.sandbox.ewaypayments.com/AccessCode/'+acces_code
-        print("eway url: ", url)
+        print("eway url: ", URL)
         response = requests.get(
             url=URL,
             auth=USER
