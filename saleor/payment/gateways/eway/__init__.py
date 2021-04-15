@@ -11,6 +11,12 @@ def dummy_success():
 def get_client_token(**_):
     return str(uuid.uuid4())
 
+def get_api_url(use_sandbox=True) -> str:
+    """Based on settings return sanbox or production url."""
+    if use_sandbox:
+        return "https://api.sandbox.ewaypayments.com/"
+    return "https://api.ewaypayments.com/"
+
 
 def authorize(
     payment_information: PaymentData, config: GatewayConfig

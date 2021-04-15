@@ -6,6 +6,7 @@ from ..utils import get_supported_currencies
 from . import GatewayConfig, capture, process_payment, refund
 from ... import TransactionKind
 import base64
+from urllib.parse import urljoin
 
 from ...interface import (
     GatewayConfig,
@@ -25,6 +26,7 @@ from . import (
     process_payment,
     refund,
     void,
+    get_api_url,
 )
 
 import requests
@@ -45,8 +47,9 @@ class EwayGatewayPlugin(BasePlugin):
     PLUGIN_ID = "mirumee.payments.eway"
     DEFAULT_ACTIVE = True
     DEFAULT_CONFIGURATION = [
-        {"name": "username", "value": "F9802C65WIIJoC71srjdgq5kiMuTHDnRDK3ror9fXmZJzcH/LDTElbYEq0g22XW9cfEe+0"},
-        {"name": "password", "value": "Fmv4KH8y"},
+        {"name": "username", "value": None},
+        {"name": "password", "value": None},
+        {"name": "Use sandbox", "value": True},
         {"name": "Store customers card", "value": False},
         {"name": "Automatic payment capture", "value": True},
         {"name": "Supported currencies", "value": ""},
@@ -62,6 +65,11 @@ class EwayGatewayPlugin(BasePlugin):
             "type": ConfigurationTypeField.SECRET,
             "help_text": "Provide password",
             "label": "password",
+        },
+        "Use sandbox": {
+            "type": ConfigurationTypeField.BOOLEAN,
+            "help_text": "Determines if Saleor should use Sendle sandbox API.",
+            "label": "Use sandbox",
         },
         "Store customers card": {
             "type": ConfigurationTypeField.BOOLEAN,
@@ -91,7 +99,8 @@ class EwayGatewayPlugin(BasePlugin):
             supported_currencies=configuration["Supported currencies"],
             connection_params={
                 "username": configuration["username"],
-                "password": configuration["password"]
+                "password": configuration["password"],
+                "use_sandbox": configuration["Use sandbox"]
             },
             store_customer=configuration["Store customers card"],
         )
@@ -135,8 +144,11 @@ class EwayGatewayPlugin(BasePlugin):
     ) -> "GatewayResponse":
         payment_data = payment_information.data
         access_code = payment_data.get("AccessCode")
-        USER = ('F9802C65WIIJoC71srjdgq5kiMuTHDnRDK3ror9fXmZJzcH/LDTElbYEq0g22XW9cfEe+0','Fmv4KH8y')
-        URL = 'https://api.sandbox.ewaypayments.com/AccessCode/'+access_code
+        USER = (
+            self.config.connection_params["username"],
+            self.config.connection_params["password"]
+        )
+        URL = urljoin(urljoin(get_api_url(self.config.connection_params["use_sandbox"]),'AccessCode/'),access_code)
         response = requests.get(
             url=URL,
             auth=USER
