@@ -103,8 +103,6 @@ class EwayGatewayPlugin(BasePlugin):
     def authorize_payment(
         self, payment_information: "PaymentData", previous_value
     ) -> "GatewayResponse":
-        with open('out.txt','a') as f:
-            print("plugin auzthorize_payment",file =f)
         return authorize(payment_information, self._get_gateway_config())
 
     @require_active_plugin
@@ -136,17 +134,13 @@ class EwayGatewayPlugin(BasePlugin):
         self, payment_information: "PaymentData", previous_value
     ) -> "GatewayResponse":
         payment_data = payment_information.data
-        print("eway payment_data", payment_data)
         access_code = payment_data.get("AccessCode")
-        print("eway access code: ", access_code)
         USER = ('F9802C65WIIJoC71srjdgq5kiMuTHDnRDK3ror9fXmZJzcH/LDTElbYEq0g22XW9cfEe+0','Fmv4KH8y')
         URL = 'https://api.sandbox.ewaypayments.com/AccessCode/'+access_code
-        print("eway url: ", URL)
         response = requests.get(
             url=URL,
             auth=USER
         )
-        print("*********************************\n Eway Response: ",response.json())
 
         status = response.json()['TransactionStatus']
         transaction_id = response.json()['TransactionID']
@@ -158,6 +152,7 @@ class EwayGatewayPlugin(BasePlugin):
             currency=payment_information.currency,
             transaction_id=transaction_id,
             kind=TransactionKind.CAPTURE,
+            customer_id=payment_information.customer_id,
             error=None
         )
         # return process_payment(payment_information, self._get_gateway_config())

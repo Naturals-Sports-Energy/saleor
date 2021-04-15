@@ -110,8 +110,6 @@ class SendlePlugin(BasePlugin):
         shipping_tax = Decimal(0.0)
         shipping_net = Decimal(0.0) #shipping_price.net.amount
 
-        print("\n\n\n\n\n city_area:",checkout.shipping_address.city_area)
-        print("post_code:",checkout.shipping_address.postal_code)
         PARAMS = {
             'pickup_suburb': 'North Strathfield',
             'pickup_postcode': '2137',
@@ -144,7 +142,6 @@ class SendlePlugin(BasePlugin):
                 headers = HEADERS,
                 auth = AUTH
             )
-        print("\n\n\n\n\n\nresponse= ",response.json())
         
         shipping_net = Decimal(response.json()[0]['quote']['net']['amount'])
         shipping_tax = Decimal(response.json()[0]['quote']['tax']['amount'])
@@ -183,7 +180,6 @@ class SendlePlugin(BasePlugin):
         base_shipping_price = previous_value
         
         if self._skip_plugin(previous_value):
-            print("skip_plugin")
             return base_shipping_price
 
         if not _validate_checkout(checkout, lines):
@@ -244,7 +240,5 @@ class SendlePlugin(BasePlugin):
             auth = AUTH,
             json = DATA
         )
-
-        # print("\n\n\n\nresponse: ",response.json())
 
 

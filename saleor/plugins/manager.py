@@ -81,7 +81,6 @@ class PluginsManager(PaymentInterface):
         method. If plugin doesn't have own implementation of expected method_name, it
         will return previous_value.
         """
-        print("************************\nmethod name = ",method_name)
         plugin_method = getattr(plugin, method_name, NotImplemented)
         if plugin_method == NotImplemented:
             return previous_value
@@ -246,6 +245,7 @@ class PluginsManager(PaymentInterface):
         )
 
     def customer_created(self, customer: "User"):
+        customer.is_active = True
         default_value = None
         return self.__run_method_on_plugins("customer_created", default_value, customer)
 
