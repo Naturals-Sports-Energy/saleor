@@ -44,11 +44,13 @@ DEFAULT_TAX_DESCRIPTION = "Unmapped Other SKU - taxable default"
 
 @dataclass
 class SendleConfiguration:
-    username_or_account: str
-    password_or_license: str
+    username: str
+    password: str
     use_sandbox: bool = True
-    company_name: str = "DEFAULT"
-    autocommit: bool = False
+    pickup_suburb: str = "DEFAULT"
+    pickup_state_name: str = "DEFAULT"
+    pickup_postcode: str = "DEFAULT"
+    pickup_country: str = "DEFAULT"
 
 
 class TransactionType:
@@ -71,8 +73,14 @@ class CustomerErrors:
 def get_api_url(use_sandbox=True) -> str:
     """Based on settings return sanbox or production url."""
     if use_sandbox:
-        return "https://sandbox-rest.avatax.com/api/v2/"
-    return "https://rest.avatax.com/api/v2/"
+        return "https://sandbox.sendle.com/api/"
+    return "https://api.sendle.com/api/"
+
+def get_country_name(country_code='AU') -> str:
+    if country_code=='AU':
+        return 'Australia'
+    elif country_code=='US':
+        return 'United States'
 
 
 def api_post_request(

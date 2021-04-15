@@ -20,6 +20,7 @@ from . import (
     api_post_request,
     generate_request_data_from_checkout,
     get_api_url,
+    get_country_name,
     get_cached_tax_codes_or_fetch,
     get_checkout_tax_data,
     get_order_request_data,
@@ -33,41 +34,49 @@ class SendlePlugin(BasePlugin):
     PLUGIN_NAME = "Sendle API"  # display name of plugin
     PLUGIN_DESCRIPTION = "Deals with the logistics using Sendle API"
     DEFAULT_CONFIGURATION = [
-        {"name": "Username or account", "value": None},
-        {"name": "Password or license", "value": None},
+        {"name": "Username", "value": None},
+        {"name": "Password", "value": None},
         {"name": "Use sandbox", "value": True},
-        {"name": "Company name", "value": "DEFAULT"},
-        {"name": "Autocommit", "value": False},
+        {"name": "Pickup suburb", "value": 'North Strathfield'},
+        {"name": "Pickup state-name", "value": 'NSW'},
+        {"name": "Pickup postcode", "value": '2137'},
+        {"name": "Pickup country", "value": 'AU'},        
     ]
     CONFIG_STRUCTURE = {
-        "Username or account": {
+        "Username": {
             "type": ConfigurationTypeField.STRING,
-            "help_text": "Provide user or account details",
-            "label": "Username or account",
+            "help_text": "Provide username",
+            "label": "Username",
         },
-        "Password or license": {
+        "Password": {
             "type": ConfigurationTypeField.PASSWORD,
-            "help_text": "Provide password or license details",
-            "label": "Password or license",
+            "help_text": "Provide password",
+            "label": "Password",
         },
         "Use sandbox": {
             "type": ConfigurationTypeField.BOOLEAN,
-            "help_text": "Determines if Saleor should use Avatax sandbox API.",
+            "help_text": "Determines if Saleor should use Sendle sandbox API.",
             "label": "Use sandbox",
         },
-        "Company name": {
+        "Pickup suburb": {
             "type": ConfigurationTypeField.STRING,
-            "help_text": "Avalara needs to receive company code. Some more "
-            "complicated systems can use more than one company "
-            "code, in that case, this variable should be changed "
-            "based on data from Avalara's admin panel",
-            "label": "Company name",
+            "help_text": "Provide the warehouse suburb. Suburb must be real and match pickup postcode.",
+            "label": "Pickup suburb",
         },
-        "Autocommit": {
-            "type": ConfigurationTypeField.BOOLEAN,
-            "help_text": "Determines, if all transactions sent to Avalara "
-            "should be committed by default.",
-            "label": "Autocommit",
+        "Pickup state-name": {
+            "type": ConfigurationTypeField.STRING,
+            "help_text": "Must be the origin location’s state or territory. For Australia these are: ACT, NSW, NT, QLD, SA, TAS, VIC, WA, with the long-form (i.e. “Northern Territory”) also accepted. For United States these are the states 2 letter representation such as CA, NY.",
+            "label": "Pickup state-name",
+        },
+        "Pickup postcode": {
+            "type": ConfigurationTypeField.STRING,
+            "help_text": "Provide warehouse postcode",
+            "label": "Pickup postcode",
+        },
+        "Pickup country": {
+            "type": ConfigurationTypeField.STRING,
+            "help_text": "ISO 3166 country code. Sendle currently supports AU for Australia and US for United States. If no pickup_country is provided this will default to AU.",
+            "label": "Pickup country",
         },
     }
     DEFAULT_ACTIVE = True
@@ -77,11 +86,13 @@ class SendlePlugin(BasePlugin):
         # Convert to dict to easier take config elements
         configuration = {item["name"]: item["value"] for item in self.configuration}
         self.config = SendleConfiguration(
-            username_or_account=configuration["Username or account"],
-            password_or_license=configuration["Password or license"],
+            username=configuration["Username"],
+            password=configuration["Password"],
             use_sandbox=configuration["Use sandbox"],
-            company_name=configuration["Company name"],
-            autocommit=configuration["Autocommit"],
+            pickup_suburb=configuration["Pickup suburb"],
+            pickup_state_name=configuration["Pickup state-name"],
+            pickup_postcode=configuration["Pickup postcode"],
+            pickup_country=configuration["Pickup country"],
         )
 
 
@@ -111,9 +122,9 @@ class SendlePlugin(BasePlugin):
         shipping_net = Decimal(0.0) #shipping_price.net.amount
 
         PARAMS = {
-            'pickup_suburb': 'North Strathfield',
-            'pickup_postcode': '2137',
-            'pickup_country' : 'AU',
+            'pickup_suburb': self.config.pickup_suburb,
+            'pickup_postcode': self.config.pickup_postcode,
+            'pickup_country' : self.config.pickup_country,
             'delivery_suburb' : checkout.shipping_address.city,
             'delivery_postcode' : checkout.shipping_address.postal_code,
             'delivery_country' : 'AU',
@@ -123,8 +134,8 @@ class SendlePlugin(BasePlugin):
         }
 
         AUTH = (
-            'sujeeshsvalath_gmail',
-            '6bWNSdTGHYBdFRqvXWD3T8bD'
+            self.config.username,
+            self.config.password
         )
 
         HEADERS = {'Content-Type': 'application/json'}
@@ -137,7 +148,7 @@ class SendlePlugin(BasePlugin):
         PARAMS['weight_value'] = total_weight
 
         response = requests.get(
-                url = 'https://sandbox.sendle.com/api/quote',
+                url = urljoin(get_api_url(self.config.use_sandbox), 'quote'),
                 params = PARAMS,
                 headers = HEADERS,
                 auth = AUTH
@@ -221,21 +232,22 @@ class SendlePlugin(BasePlugin):
                 },
                 "address": {
                     "address_line1": "Naturals Warehouse",
-                    "suburb": "North Strathfield",
-                    "state_name": "NSW",
-                    "postcode": "2137",
-                    "country": "Australia"
+                    "suburb": self.config.pickup_suburb,
+                    "state_name": self.config.pickup_state_name,
+                    "postcode": self.config.pickup_postcode,
+                    "country": get_country_name(self.config.pickup_country)
                 }
             }
         }
         HEADERS = {'Content-Type': 'application/json','Idempotency-Key': str(order.id)}
 
         AUTH = (
-            'sujeeshsvalath_gmail',
-            '6bWNSdTGHYBdFRqvXWD3T8bD'
+            self.config.username,
+            self.config.password
         )
+
         response = requests.post(
-            url = "https://sandbox.sendle.com/api/orders",
+            url = urljoin(get_api_url(self.config.use_sandbox, 'orders')),
             headers = HEADERS,
             auth = AUTH,
             json = DATA
