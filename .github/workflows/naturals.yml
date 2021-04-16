@@ -1,0 +1,30 @@
+name: Saleor Build/Deploy Workflow
+
+on:
+  push:
+    branch:
+      - nirmal/feature/eway_integration
+
+jobs:
+  digitalocean-deploy:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Start
+        run: echo "Starting"
+
+      - name: SSH connection
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{secrets.SSH_HOST}} # IP Address of the VPS
+          key: ${{secrets.SSH_KEY}} # Private(?) key
+          username: ${{secrets.SSH_USERNAME}} # User (probably root)
+
+          script: |
+          cd naturals/backend/saleor
+          git pull origin nirmal/feature/eway_integration
+          echo 'Pull successful'
+          sudo systemctl daemon-reload
+          sudo systemctl restart gunicorn.service
+          sudo service nginx restart
+          echo 'Script run successful.'
+
