@@ -21,7 +21,7 @@ jobs:
 
           script: |
           cd naturals/backend/saleor
-          git pull origin nirmal/feature/eway_integration
+          ${{ secrets.SCRIPT}}
           echo 'Pull successful'
           sudo systemctl daemon-reload
           sudo systemctl restart gunicorn.service
