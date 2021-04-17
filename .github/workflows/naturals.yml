@@ -24,6 +24,9 @@ jobs:
             cd naturals/backend/saleor
             git pull origin nirmal/feature/eway_integration
             echo 'Pull successful'
+            source venv/bin/activate
+            pip install -r requirements.txt
+            deactivate 
             sudo systemctl daemon-reload
             sudo systemctl restart gunicorn.service
             sudo service nginx restart
