@@ -247,7 +247,7 @@ class SendlePlugin(BasePlugin):
         )
 
         response = requests.post(
-            url = urljoin(get_api_url(self.config.use_sandbox, 'orders')),
+            url = urljoin(get_api_url(self.config.use_sandbox), 'orders'),
             headers = HEADERS,
             auth = AUTH,
             json = DATA
