@@ -181,8 +181,6 @@ class EwayGatewayPlugin(BasePlugin):
     @require_active_plugin
     def get_payment_config(self, previous_value):
         config = self._get_gateway_config()
-        print("**********************************************************")
-        print("username: {}, password: {}".format(config.connection_params["username"],config.connection_params["password"]))
         sample_string = "{}:{}".format(config.connection_params["username"],config.connection_params["password"])
         sample_string_bytes = sample_string.encode("ascii")
         
