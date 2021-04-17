@@ -20,11 +20,11 @@ jobs:
           username: ${{secrets.SSH_USERNAME}} # User (probably root)
 
           script: |
-          cd naturals/backend/saleor
-          ${{ secrets.SCRIPT}}
-          echo 'Pull successful'
-          sudo systemctl daemon-reload
-          sudo systemctl restart gunicorn.service
-          sudo service nginx restart
-          echo 'Script run successful.'
+            cd naturals/backend/saleor
+            git pull origin nirmal/feature/eway_integration
+            echo 'Pull successful'
+            sudo systemctl daemon-reload
+            sudo systemctl restart gunicorn.service
+            sudo service nginx restart
+            echo 'Script run successful.'
 
