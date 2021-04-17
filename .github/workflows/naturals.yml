@@ -18,6 +18,7 @@ jobs:
           host: ${{secrets.SSH_HOST}} # IP Address of the VPS
           key: ${{secrets.SSH_KEY}} # Private(?) key
           username: ${{secrets.SSH_USERNAME}} # User (probably root)
+          passphrase: ${{ secrets.PASSPHRASE }}
 
           script: |
             cd naturals/backend/saleor
