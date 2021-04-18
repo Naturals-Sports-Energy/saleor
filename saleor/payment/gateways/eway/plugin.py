@@ -153,19 +153,24 @@ class EwayGatewayPlugin(BasePlugin):
             url=URL,
             auth=USER
         )
+        # In case the auth is None then the response will be empty and response.json() will raise exception
         try:
             data = response.json()
         except:
             data = {}
 
-        print("********************************************************")
-        print("transaction_id: {}".format(data.get("TransactionID", payment_information.token)))
+        # if the response is empty(No TransactionID) then use payment_information.token as transaction_id
+        transaction_id = data.get("TransactionID", payment_information.token)
+        # if the response is not empty and contains TransactionID but the value is None then use payment_information.token
+        if transaction_id is None:
+            transaction_id = payment_information.token
+
         return GatewayResponse(
             is_success = data.get("TransactionStatus",False),
             action_required = False,
             amount=payment_information.amount,
             currency=payment_information.currency,
-            transaction_id= data.get("TransactionID", payment_information.token),
+            transaction_id= transaction_id,
             kind=TransactionKind.CAPTURE,
             customer_id=payment_information.customer_id,
             error=None
