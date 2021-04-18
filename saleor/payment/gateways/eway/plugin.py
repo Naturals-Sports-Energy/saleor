@@ -153,16 +153,17 @@ class EwayGatewayPlugin(BasePlugin):
             url=URL,
             auth=USER
         )
-
-        status = response.json()['TransactionStatus']
-        transaction_id = response.json()['TransactionID']
+        try:
+            data = response.json()
+        except:
+            data = {}
 
         return GatewayResponse(
-            is_success = status,
+            is_success = data.get("TransactionStatus",False),
             action_required = False,
             amount=payment_information.amount,
             currency=payment_information.currency,
-            transaction_id=transaction_id,
+            transaction_id= data.get("TransactionID", payment_information.token),
             kind=TransactionKind.CAPTURE,
             customer_id=payment_information.customer_id,
             error=None
