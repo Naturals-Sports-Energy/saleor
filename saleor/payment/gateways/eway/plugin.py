@@ -158,6 +158,8 @@ class EwayGatewayPlugin(BasePlugin):
         except:
             data = {}
 
+        print("********************************************************")
+        print("transaction_id: {}".format(data.get("TransactionID", payment_information.token)))
         return GatewayResponse(
             is_success = data.get("TransactionStatus",False),
             action_required = False,
