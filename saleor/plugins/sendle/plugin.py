@@ -5,6 +5,7 @@ from prices import Money, TaxedMoney, TaxedMoneyRange
 from ...discount import DiscountInfo
 from decimal import Decimal
 import requests
+from ...order.models import Order
 
 from . import (
     DEFAULT_TAX_CODE,
@@ -254,5 +255,21 @@ class SendlePlugin(BasePlugin):
             auth = AUTH,
             json = DATA
         )
+
+        #extracting tracking url from the API response
+        tracking_url = response.json()["tracking_url"]
+
+        #generating a dictionary with the tracking url
+        trackin_info = {
+            "tracking_url": tracking_url
+        }
+
+        #adding tracking url to the order object's metadata
+        order.store_value_in_metadata(trackin_info)
+
+        #updating order object in db
+        order.save()
+
+
 
 
