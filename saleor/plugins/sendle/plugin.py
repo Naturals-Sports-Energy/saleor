@@ -256,6 +256,9 @@ class SendlePlugin(BasePlugin):
             json = DATA
         )
 
+        print("*************************************************")
+        print("response.json()= ".format(response.json()))
+
         #extracting tracking url from the API response
         tracking_url = response.json()["tracking_url"]
 
