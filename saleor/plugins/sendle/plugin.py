@@ -143,6 +143,8 @@ class SendlePlugin(BasePlugin):
         total_weight = 0
         for line in lines:
             weight = str.split(str(line.variant.weight))[0]
+            if weight is None:
+                weight = 0
             total_weight += float(weight)
 
         PARAMS['weight_value'] = total_weight
