@@ -42,5 +42,6 @@ if settings.DEBUG:
     urlpatterns += static("/media/", document_root=settings.MEDIA_ROOT) + [
         url(r"^static/(?P<path>.*)$", serve),
         url(r"confirm-mail/", views.confirm_mail),
+        url(r"forgot-password/", views.forgot_password),
         url(r"^", views.home, name="home"),
     ]

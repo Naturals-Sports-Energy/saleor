@@ -126,7 +126,7 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
+FORM_RENDERER = "django.forms.renderers.DjangoTemplates"
 
 EMAIL_URL = os.environ.get("EMAIL_URL")
 SENDGRID_USERNAME = os.environ.get("SENDGRID_USERNAME")
