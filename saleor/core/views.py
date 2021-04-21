@@ -101,7 +101,10 @@ def forgot_password(request):
             URL = GRAPHQL_URL
             response = requests.post(url=URL, json=json)
             print("***********************************************")
-            print("response.json(): {}".format(response.json()))
+            try:
+                print("response.json(): {}".format(response.json()))
+            except:
+                print("json: : {}".format(json))
             if response.json()["data"]["setPassword"]["accountErrors"]==[]:
                 return TemplateResponse(request, 'forgot_password/password_reset_success.html')
             else:
