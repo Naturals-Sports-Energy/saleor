@@ -156,7 +156,12 @@ class SendlePlugin(BasePlugin):
                 headers = HEADERS,
                 auth = AUTH
             )
-        
+        try:
+            shipping_net = Decimal(response.json()[0]['quote']['net']['amount'])
+            shipping_tax = Decimal(response.json()[0]['quote']['tax']['amount'])
+        except:
+            print("*****************************************************")
+            print("Response: {}".format(response.json()))
         shipping_net = Decimal(response.json()[0]['quote']['net']['amount'])
         shipping_tax = Decimal(response.json()[0]['quote']['tax']['amount'])
 
