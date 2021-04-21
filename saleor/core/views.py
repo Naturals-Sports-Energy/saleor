@@ -101,15 +101,20 @@ def forgot_password(request):
             URL = GRAPHQL_URL
             response = requests.post(url=URL, json=json)
             print("***********************************************")
+            # The response from server can be empty (in case of timeout)
             try:
                 print("response.json(): {}".format(response.json()))
+                # check if there were any errors
+                if response.json()["data"]["setPassword"]["accountErrors"]==[]:
+                    return TemplateResponse(request, 'forgot_password/password_reset_success.html')
+                # render reset fail page if there are errors and display error
+                else:
+                    error = response.json()["data"]["setPassword"]["accountErrors"][0]["message"]
+                    return TemplateResponse(request, 'forgot_password/password_reset_fail.html', {'message': error})
+            # if the response from the server is empty then display error message
             except:
                 print("json: : {}".format(json))
-            if response.json()["data"]["setPassword"]["accountErrors"]==[]:
-                return TemplateResponse(request, 'forgot_password/password_reset_success.html')
-            else:
-                error = response.json()["data"]["setPassword"]["accountErrors"][0]["message"]
-                return TemplateResponse(request, 'forgot_password/password_reset_fail.html', {'message': error})
+            return TemplateResponse(request, 'forgot_password/password_reset_fail.html', {'message': 'Empty response from server.'})
     else:
         email = unquote(request.GET.get('email'))
         token = request.GET.get('token')
