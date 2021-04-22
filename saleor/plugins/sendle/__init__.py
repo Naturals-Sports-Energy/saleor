@@ -76,44 +76,43 @@ def get_api_url(use_sandbox=True) -> str:
         return "https://sandbox.sendle.com/api/"
     return "https://api.sendle.com/api/"
 
-def get_country_name(country_code='AU') -> str:
-    if country_code=='AU':
-        return 'Australia'
-    elif country_code=='US':
-        return 'United States'
-
-
 def api_post_request(
-    url: str, data: Dict[str, Any], config: SendleConfiguration
+    url: str, headers: Dict[str, Any], data: Dict[str, Any], config: SendleConfiguration
 ) -> Dict[str, Any]:
     response = None
     try:
-        auth = HTTPBasicAuth(config.username_or_account, config.password_or_license)
+        auth = HTTPBasicAuth(config.username, config.password)
         response = requests.post(url, auth=auth, data=json.dumps(data), timeout=TIMEOUT)
-        logger.debug("Hit to Avatax to calculate taxes %s", url)
+        logger.debug("Hit to Sendle to get shipping price %s", url)
         json_response = response.json()
-        if "error" in response:  # type: ignore
-            logger.exception("Avatax response contains errors %s", json_response)
+        if "error" in json_response:  # type: ignore
+            if "message" in json_response:
+                error_message = json_response["error"]
+            elif "error_description" in json_response:
+                error_message = json_response["error_description"]
+            else:
+                error_message = json_response            
+            logger.exception("Sendle response contains errors %s", error_message)
             return json_response
     except requests.exceptions.RequestException:
-        logger.exception("Fetching taxes failed %s", url)
+        logger.exception("Fetching shipping quotes failed %s", url)
         return {}
     except json.JSONDecodeError:
         content = response.content if response else "Unable to find the response"
         logger.exception(
-            "Unable to decode the response from Avatax. Response: %s", content
+            "Unable to decode the response from Sendle. Response: %s", content
         )
         return {}
     return json_response  # type: ignore
 
 
 def api_get_request(
-    url: str, username_or_account: str, password_or_license: str,
-):
+    url: str, params: Dict[str, Any], headers: Dict[str, Any], config: SendleConfiguration
+) -> Dict[str, Any]:
     response = None
     try:
-        auth = HTTPBasicAuth(username_or_account, password_or_license)
-        response = requests.get(url, auth=auth, timeout=TIMEOUT)
+        auth = HTTPBasicAuth(config.username, config.password)
+        response = requests.get(url, params=params, auth=auth, timeout=TIMEOUT)
         json_response = response.json()
         logger.debug("[GET] Hit to %s", url)
         if "error" in json_response:  # type: ignore
@@ -128,6 +127,12 @@ def api_get_request(
             "Unable to decode the response from Avatax. Response: %s", content
         )
         return {}
+
+def get_country_name(country_code='AU') -> str:
+    if country_code=='AU':
+        return 'Australia'
+    elif country_code=='US':
+        return 'United States'
 
 
 def _validate_adddress_details(

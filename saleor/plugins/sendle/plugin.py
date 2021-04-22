@@ -21,6 +21,8 @@ from . import (
     api_post_request,
     generate_request_data_from_checkout,
     get_api_url,
+    api_post_request,
+    api_get_request,
     get_country_name,
     get_cached_tax_codes_or_fetch,
     get_checkout_tax_data,
@@ -134,11 +136,6 @@ class SendlePlugin(BasePlugin):
             'first_mile_option' : 'pickup'
         }
 
-        AUTH = (
-            self.config.username,
-            self.config.password
-        )
-
         HEADERS = {'Content-Type': 'application/json'}
 
         total_weight = 0
@@ -150,21 +147,15 @@ class SendlePlugin(BasePlugin):
 
         PARAMS['weight_value'] = total_weight
 
-        response = requests.get(
+        response = api_get_request(
                 url = urljoin(get_api_url(self.config.use_sandbox), 'quote'),
                 params = PARAMS,
                 headers = HEADERS,
-                auth = AUTH
+                config = self.config
             )
-        try:
-            shipping_net = Decimal(response.json()[0]['quote']['net']['amount'])
-            shipping_tax = Decimal(response.json()[0]['quote']['tax']['amount'])
-        except:
-            print("*****************************************************")
-            print("params: {}".format(PARAMS))
-            print("Response: {}".format(response.json()))
-        shipping_net = Decimal(response.json()[0]['quote']['net']['amount'])
-        shipping_tax = Decimal(response.json()[0]['quote']['tax']['amount'])
+
+        shipping_net = Decimal(response[0]['quote']['net']['amount'])
+        shipping_tax = Decimal(response[0]['quote']['tax']['amount'])
 
         shipping_gross = Money(amount=shipping_net + shipping_tax, currency=currency)
         shipping_net = Money(amount=shipping_net, currency=currency)
@@ -225,7 +216,7 @@ class SendlePlugin(BasePlugin):
             "receiver": {
                 "instructions": "sample instructions",
                 "contact": {
-                    "name" : 'customer',
+                    "name" : order.shipping_address.first_name,
                 },
                 "address": {
                     "address_line1": order.shipping_address.street_address_1,
@@ -255,11 +246,11 @@ class SendlePlugin(BasePlugin):
             self.config.password
         )
 
-        response = requests.post(
+        response = api_post_request(
             url = urljoin(get_api_url(self.config.use_sandbox), 'orders'),
             headers = HEADERS,
-            auth = AUTH,
-            json = DATA
+            config = self.config,
+            data = DATA
         )
 
         print("*************************************************")
