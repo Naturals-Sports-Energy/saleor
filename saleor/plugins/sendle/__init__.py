@@ -80,6 +80,7 @@ def api_post_request(
     url: str, headers: Dict[str, Any], data: Dict[str, Any], config: SendleConfiguration
 ) -> Dict[str, Any]:
     response = None
+    json_response = None
     try:
         auth = (config.username, config.password)
         print("*************************************************")
