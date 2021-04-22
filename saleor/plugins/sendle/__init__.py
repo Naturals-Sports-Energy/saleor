@@ -103,7 +103,7 @@ def api_post_request(
             if "error_description" not in json_response and "message" not in json_response:
                 error_message = error_message + "json response: " + json_response            
             logger.exception("Sendle response contains errors %s", error_message)
-        return json_response
+            return json_response
     except requests.exceptions.RequestException:
         logger.exception("Fetching shipping quotes failed %s", url)
         return {}

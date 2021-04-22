@@ -259,7 +259,7 @@ class SendlePlugin(BasePlugin):
         tracking_url = ''
         try:
             #extracting tracking url from the API response
-            tracking_url = response.json()["tracking_url"]
+            tracking_url = response["tracking_url"]
 
             #generating a dictionary with the tracking url
             trackin_info = {
