@@ -90,6 +90,7 @@ def api_post_request(
         response = requests.post(url, auth=auth, json=data, timeout=TIMEOUT, headers=headers)
         logger.debug("Hit to Sendle to get shipping price %s", url)
         json_response = response.json()
+        print("json_response: {}".format(json_response))
         if "error" in json_response:  # type: ignore
             error_message = json_response["error"]
             if "error_description" in json_response:
