@@ -83,11 +83,6 @@ def api_post_request(
     json_response = None
     try:
         auth = (config.username, config.password)
-        print("*************************************************")
-        print("url : {}".format(url))
-        print("auth: {}".format(auth))
-        print("data: {}".format(data))
-        print("headers: {}".format(headers))
         response = requests.post(url, auth=auth, json=data, timeout=TIMEOUT, headers=headers)
         logger.debug("Hit to Sendle to get shipping price %s", url)
         json_response = response.json()

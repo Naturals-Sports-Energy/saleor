@@ -6,6 +6,7 @@ from ...discount import DiscountInfo
 from decimal import Decimal
 import requests
 from ...order.models import Order
+import logging
 
 from . import (
     DEFAULT_TAX_CODE,
@@ -31,6 +32,8 @@ from . import (
 )
 
 from ..base_plugin import BasePlugin, ConfigurationTypeField
+
+logger = logging.getLogger(__name__)
 
 class SendlePlugin(BasePlugin):
     PLUGIN_ID = "plugin.sendleapi"  # plugin identifier
@@ -257,20 +260,20 @@ class SendlePlugin(BasePlugin):
         )
 
         tracking_url = ''
+        tracking_info = {}
         try:
             #extracting tracking url from the API response
             tracking_url = response["tracking_url"]
 
             #generating a dictionary with the tracking url
-            trackin_info = {
+            tracking_info = {
                 "tracking_url": tracking_url
             }
-        except:
-            print("*************************************************")
-            print("response.json()= ".format(response))
+        except Exception as e:
+            logger.exception("{} , response: {}".format(e,response))
 
         #adding tracking url to the order object's metadata
-        order.store_value_in_metadata(trackin_info)
+        order.store_value_in_metadata(tracking_info)
 
         #updating order object in db
         order.save()
