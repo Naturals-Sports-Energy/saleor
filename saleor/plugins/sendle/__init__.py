@@ -92,7 +92,7 @@ def api_post_request(
             if "message" in json_response:
                 error_message = error_message + ". " + json_response["message"]
             if "messages" in json_response:
-                error_message = error_message + ". " + json_response["messages"]
+                error_message = error_message + ". " + str(json_response["messages"])
             if "error_description" not in json_response and "message" not in json_response:
                 error_message = error_message + "json response: " + json_response            
             logger.exception("Sendle response contains errors %s", error_message)
