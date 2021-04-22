@@ -256,16 +256,18 @@ class SendlePlugin(BasePlugin):
             data = DATA
         )
 
-        print("*************************************************")
-        print("response.json()= ".format(response.json()))
+        tracking_url = ''
+        try:
+            #extracting tracking url from the API response
+            tracking_url = response.json()["tracking_url"]
 
-        #extracting tracking url from the API response
-        tracking_url = response.json()["tracking_url"]
-
-        #generating a dictionary with the tracking url
-        trackin_info = {
-            "tracking_url": tracking_url
-        }
+            #generating a dictionary with the tracking url
+            trackin_info = {
+                "tracking_url": tracking_url
+            }
+        except:
+            print("*************************************************")
+            print("response.json()= ".format(response))
 
         #adding tracking url to the order object's metadata
         order.store_value_in_metadata(trackin_info)
