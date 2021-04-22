@@ -153,10 +153,13 @@ class SendlePlugin(BasePlugin):
                 headers = HEADERS,
                 config = self.config
             )
-
-        shipping_net = Decimal(response[0]['quote']['net']['amount'])
-        shipping_tax = Decimal(response[0]['quote']['tax']['amount'])
-
+        try:
+            shipping_net = Decimal(response[0]['quote']['net']['amount'])
+            shipping_tax = Decimal(response[0]['quote']['tax']['amount'])
+        except:
+            print("*********************************************************")
+            print("params: {}".format(PARAMS))
+            print("response: {}".format(response))
         shipping_gross = Money(amount=shipping_net + shipping_tax, currency=currency)
         shipping_net = Money(amount=shipping_net, currency=currency)
 
