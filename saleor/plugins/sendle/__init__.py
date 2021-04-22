@@ -81,7 +81,7 @@ def api_post_request(
 ) -> Dict[str, Any]:
     response = None
     try:
-        auth = HTTPBasicAuth(config.username, config.password)
+        auth = (config.username, config.password)
         response = requests.post(url, auth=auth, json=data, timeout=TIMEOUT)
         logger.debug("Hit to Sendle to get shipping price %s", url)
         json_response = response.json()
