@@ -106,6 +106,11 @@ def api_post_request(
             "Unable to decode the response from Sendle. Response: %s", content
         )
         return {}
+    except :
+        logger.exception(
+            "Unexpected error. response_json: ".format(response.json())
+        )
+        return {}
     return json_response  # type: ignore
 
 
