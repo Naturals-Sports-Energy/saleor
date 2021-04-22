@@ -86,12 +86,13 @@ def api_post_request(
         logger.debug("Hit to Sendle to get shipping price %s", url)
         json_response = response.json()
         if "error" in json_response:  # type: ignore
+            error_message = json_response["error"]
+            if "error_description" in json_response:
+                error_message = error_message + ". " + json_response["error_description"]
             if "message" in json_response:
-                error_message = json_response["error"]
-            elif "error_description" in json_response:
-                error_message = json_response["error_description"]
-            else:
-                error_message = json_response            
+                error_message = error_message + ". " + json_response["error"]
+            if "error_description" not in json_response and "message" not in json_response:
+                error_message = error_message + "json response: " + json_response            
             logger.exception("Sendle response contains errors %s", error_message)
             return json_response
     except requests.exceptions.RequestException:
