@@ -53,6 +53,8 @@ def collect_data_for_email(
         prepare_order_details_url(order, redirect_url) if redirect_url else ""
     )
     email_context["order"] = order
+    email_context["orderDate"] = order.created
+    email_context["first_name"] = order.user.first_name
 
     # Order confirmation template requires additional information
     if template in [CONFIRM_ORDER_TEMPLATE, STAFF_CONFIRM_ORDER_TEMPLATE]:
@@ -108,6 +110,7 @@ def send_staff_order_confirmation(order_pk, redirect_url):
     staff_email_data = collect_staff_order_notification_data(
         order_pk, STAFF_CONFIRM_ORDER_TEMPLATE, redirect_url
     )
+    print("staff_email_data: {}".format(staff_email_data))
     if staff_email_data["recipient_list"]:
         send_templated_mail(**staff_email_data)
 
