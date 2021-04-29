@@ -1,8 +1,8 @@
 from django import forms
 
 class ResetPassword(forms.Form):
-    new_password = forms.CharField(label='new_password',widget=forms.PasswordInput())
-    confirm_new_password = forms.CharField(label='Password (again)', widget=forms.PasswordInput())
+    new_password = forms.CharField(widget=forms.PasswordInput(attrs={'class':'form-control','id':'new_password','placeholder':'password'}))
+    confirm_new_password = forms.CharField(widget=forms.PasswordInput(attrs={'class':'form-control', 'id':'confirm_new_password','placeholder':'password'}))
     email = forms.CharField(widget=forms.HiddenInput,required=False)
     token = forms.CharField(widget=forms.HiddenInput,required=False)
     def clean(self):
