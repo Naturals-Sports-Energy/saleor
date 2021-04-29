@@ -502,3 +502,30 @@ def retrieve_tax_code_from_meta(
 ):
     tax_code = obj.get_value_from_metadata(META_CODE_KEY, default)
     return tax_code
+
+def graphql_query(url,query,variables,token=None):
+    json = {
+        "query": query,
+        "variables": variables
+    }
+    headers=None
+    try:
+        if token:
+            headers = {
+                "Authorization" : "JWT {}".format(token)
+            }
+        response = requests.post(url=url , json=json, headers=headers)
+        json_response = response.json()
+        if "error" in response:  # type: ignore
+            print("Graphql response contains errors %s", json_response)
+            return json_response
+    except requests.exceptions.RequestException:
+        print("Fetching query result failed %s", url)
+        return {}
+    except json.JSONDecodeError:
+        content = response.content if response else "Unable to find the response"
+        print(
+            "Unable to decode the response from graphql. Response: %s", content
+        )
+        return {}
+    return json_response  # type: ignore

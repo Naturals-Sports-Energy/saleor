@@ -7,6 +7,10 @@ from decimal import Decimal
 import requests
 from ...order.models import Order
 import logging
+from django.core.handlers.wsgi import WSGIRequest
+from django.http import HttpResponse
+import json
+import os
 
 from . import (
     DEFAULT_TAX_CODE,
@@ -29,6 +33,7 @@ from . import (
     get_checkout_tax_data,
     get_order_request_data,
     get_order_tax_data,
+    graphql_query
 )
 
 from ..base_plugin import BasePlugin, ConfigurationTypeField
@@ -264,12 +269,19 @@ class SendlePlugin(BasePlugin):
         try:
             #extracting tracking url from the API response
             tracking_url = response["tracking_url"]
+            sendle_reference = response["sendle_reference"]
+
+            #storing sendle reference number in customer_note field
+            #TODO might create a attribute called tracking refernce 
+            order.customer_note = sendle_reference
+            order.save()
 
             #generating a dictionary with the tracking url
             tracking_info = {
                 "tracking_url": tracking_url
             }
         except Exception as e:
+            IDEMPOTENCY_KEY_EXISTS = 'The idempotency key you have requested already exists with different params'
             logger.exception("{} , response: {}".format(e,response))
 
         #adding tracking url to the order object's metadata
@@ -277,6 +289,114 @@ class SendlePlugin(BasePlugin):
 
         #updating order object in db
         order.save()
+
+        # add tracking to Trackingmore webhook
+        TRACKINGMORE_URL = os.environ.setdefault("TRACKINGMORE_URL","https://api.trackingmore.com/v2/trackings/post")
+        TRACKINGMORE_COURIER_CODE = os.environ.setdefault("TRACKINGMORE_COURIER_CODE","sendle")
+        TRACKINGMORE_API_KEY = os.environ.get("TRACKINGMORE_API_KEY")
+
+        headers = {
+            "Trackingmore-Api-Key" : TRACKINGMORE_API_KEY
+        }
+
+        data = {
+            "tracking_number": sendle_reference,
+            "carrier_code": TRACKINGMORE_COURIER_CODE,
+            "order_id": order.token 
+        }
+
+        print("*****************************************************************")
+        print("url: {}".format(TRACKINGMORE_URL))
+        print("json: {}".format(data))
+        print("headers: {}".format(headers))
+        response = requests.post(url=TRACKINGMORE_URL,json=data, headers=headers)
+        print("Sent tracking to trackingmore: {}".format(response.json()))
+        
+
+    def webhook(self, request: WSGIRequest, path: str, previous_value) -> HttpResponse:
+        # check if plugin is active
+        # check signatures and headers.
+        if path == '/webhook/tracking':
+            if request.method=="GET":
+                print("webhook get")
+            if request.method=="POST":
+                print("webhook post")
+                try:
+                    data = json.loads(request.body)
+                    print(data)
+                    sendle_reference = data["data"]["tracking_number"]
+                    delivery_status = data["data"]["delivery_status"]
+                    order_token = data["data"]["order_number"]
+                    # order = Order.objects.filter(token=order_token).first()
+                    
+                    # order_token = order.token
+                    GRAPHQL_URL = os.environ.setdefault("GRAPHQL_URL","http://0.0.0.0:8000/graphql/")
+
+                    # graphql query to get oder object, get order id from there
+                    query = """
+                    query getOrder($token:UUID!){
+                        orderByToken(token:$token){
+                            id
+                        }
+                    }
+                    """
+                    variables = {
+                        "token" : order_token
+                    }
+                    
+                    response = graphql_query(url=GRAPHQL_URL, query=query, variables=variables)
+                    order_id = response["data"]["orderByToken"]["id"]
+                    
+                    #get JWT token
+                    USERNAME = os.environ.get("USERNAME")
+                    PASSWORD = os.environ.get("PASSWORD")
+                    query = """
+                        mutation login($email:String!,$password:String!){
+                            tokenCreate(email:$email, password:$password){
+                                token
+                                user{
+                                id
+                                }
+                            }
+                        }
+                    """
+
+                    variables = {
+                        "email": USERNAME,
+                        "password": PASSWORD
+                    }
+
+                    response = graphql_query(url=GRAPHQL_URL, query=query, variables=variables)
+                    
+                    print("login_data = ",response)
+                    JWT_token = response["data"]["tokenCreate"]["token"]
+
+                    #use the order id for the orderNoteAdd
+                    query="""
+                    mutation addNotes($order:ID!,$input:OrderAddNoteInput!){
+                        orderAddNote(order:$order, input:$input){
+                            order{
+                                id
+                                customerNote
+                            }
+                        }
+                    }
+                    """
+
+                    variables = {
+                        "order" : order_id,
+                        "input" : {
+                            "message" : delivery_status
+                        }
+                    }
+
+                    response = graphql_query(url=GRAPHQL_URL, query=query, variables=variables, token=JWT_token)
+                    print("add note response: ", response)
+                except Exception as e:
+                    logger.exception("{} , response: {}".format(e,response))
+
+
+        return HttpResponse()
 
 
 
