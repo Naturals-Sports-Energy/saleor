@@ -1,6 +1,8 @@
 from django import forms
 
 class ResetPassword(forms.Form):
+    error_css_class='error'
+    required_css_class='required'
     new_password = forms.CharField(widget=forms.PasswordInput(attrs={'class':'form-control','id':'new_password','placeholder':'password'}))
     confirm_new_password = forms.CharField(widget=forms.PasswordInput(attrs={'class':'form-control', 'id':'confirm_new_password','placeholder':'password'}))
     email = forms.CharField(widget=forms.HiddenInput,required=False)
