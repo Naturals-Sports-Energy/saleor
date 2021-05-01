@@ -309,8 +309,12 @@ class SendlePlugin(BasePlugin):
         print("url: {}".format(TRACKINGMORE_URL))
         print("json: {}".format(data))
         print("headers: {}".format(headers))
-        response = requests.post(url=TRACKINGMORE_URL,json=data, headers=headers)
-        print("Sent tracking to trackingmore: {}".format(response.json()))
+        try:
+            response = requests.post(url=TRACKINGMORE_URL,json=data, headers=headers)
+            print("Sent tracking to trackingmore: {}".format(response.json()))
+        except Exception as e:
+            logger.exception("Failed sending tracking to trackingmore, {} , response: {}".format(e,response))
+        
         
 
     def webhook(self, request: WSGIRequest, path: str, previous_value) -> HttpResponse:
