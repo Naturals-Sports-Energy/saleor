@@ -50,15 +50,20 @@ def confirm_mail(request):
     if response.json()["data"]["confirmAccount"]["user"] is None:
         error = response.json()["data"]["confirmAccount"]["accountErrors"][0]["message"]
         message = error
+        return TemplateResponse(
+            request,
+            "confirm_mail/fail.html",
+            {"message":message},
+        )
     else :
         print("response isActive= ", response.json()["data"]["confirmAccount"]["user"]["isActive"])
         message = "Email verified."
-
-    return TemplateResponse(
-        request,
-        "confirm_mail/index.html",
-        {"message":message},
-    )
+        return TemplateResponse(
+            request,
+            "confirm_mail/success.html",
+            {"message":message},
+        )
+    
 
 def forgot_password(request):
     if request.method == 'POST':
