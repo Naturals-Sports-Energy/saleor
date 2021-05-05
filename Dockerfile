@@ -8,9 +8,9 @@ RUN apt-get -y update \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY requirements_dev.txt /app/
+COPY requirements.txt /app/
 WORKDIR /app
-RUN pip install -r requirements_dev.txt
+RUN pip install -r requirements.txt
 
 ### Final image
 FROM python:3.8-slim
@@ -47,16 +47,5 @@ ENV PYTHONUNBUFFERED 1
 
 ARG COMMIT_ID
 ARG VERSION
-
-LABEL org.opencontainers.image.title="mirumee/saleor"                                  \
-      org.opencontainers.image.description="\
-A modular, high performance, headless e-commerce platform built with Python, \
-GraphQL, Django, and ReactJS."                                                         \
-      org.opencontainers.image.url="https://saleor.io/"                                \
-      org.opencontainers.image.source="https://github.com/mirumee/saleor"              \
-      org.opencontainers.image.revision=$COMMIT_ID                                     \
-      org.opencontainers.image.version=$VERSION                                        \
-      org.opencontainers.image.authors="Mirumee Software (https://mirumee.com)"        \
-      org.opencontainers.image.licenses="BSD 3"
 
 CMD ["gunicorn", "--bind", ":8000", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "saleor.asgi:application"]
