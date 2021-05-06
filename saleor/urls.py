@@ -43,5 +43,6 @@ if settings.DEBUG:
         url(r"^static/(?P<path>.*)$", serve),
         url(r"confirm-mail/", views.confirm_mail),
         url(r"forgot-password/", views.forgot_password),
+        url(r"sign-in-google/", views.sign_in_google),
         url(r"^", views.home, name="home"),
     ]
