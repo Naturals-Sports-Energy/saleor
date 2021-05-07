@@ -12,6 +12,9 @@ from .product.views import digital_product
 
 urlpatterns = [
     url(r"^graphql/", csrf_exempt(GraphQLView.as_view(schema=schema)), name="api"),
+    url(r"confirm-mail/", views.confirm_mail),
+    url(r"forgot-password/", views.forgot_password),
+    url(r"sign-in-google/", views.sign_in_google),
     url(r"^feeds/", include((feed_urls, "data_feeds"), namespace="data_feeds")),
     url(
         r"^digital-download/(?P<token>[0-9A-Za-z_\-]+)/$",
@@ -41,8 +44,5 @@ if settings.DEBUG:
 
     urlpatterns += static("/media/", document_root=settings.MEDIA_ROOT) + [
         url(r"^static/(?P<path>.*)$", serve),
-        url(r"confirm-mail/", views.confirm_mail),
-        url(r"forgot-password/", views.forgot_password),
-        url(r"sign-in-google/", views.sign_in_google),
         url(r"^", views.home, name="home"),
     ]
