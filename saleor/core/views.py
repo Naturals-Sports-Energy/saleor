@@ -1,7 +1,7 @@
 import os
 
 from django.template.response import TemplateResponse
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.http import HttpResponseRedirect
 from django.conf import settings
 import requests
@@ -10,6 +10,10 @@ from .forms import ResetPassword
 from saleor.account.models import User
 import json
 import hashlib
+from apiclient import discovery
+import httplib2
+from oauth2client import client
+
 GRAPHQL_URL = os.environ.get("GRAPHQL_URL", "http://0.0.0.0:8000/graphql/")
 
 def home(request):
@@ -136,69 +140,55 @@ def sign_in_google(request):
     if request.method == 'POST':
         body = json.loads(request.body)
         print("social_auth body from front-end: {}".format(body))
-        # code to get email and first name from the body of the request
-        email = body['user']['email']
-        first_name = body['user']['givenName']
+        auth_code = body['userInfo']['serverAuthCode']
+        print("auth_code: {}".format(auth_code))
+        # If this request does not have `X-Requested-With` header, this could be a CSRF
+        # if not request.headers.get('X-Requested-With'):
+        #     return HttpResponseForbidden()
 
-        secret = settings.SECRET_KEY
-        # concatenate secret and email and generate a hash based on the concatenated string
-        # use the hash as password
-        base = secret+email
-        base = base.encode()
-        password = hashlib.sha224(base).hexdigest()
+        # Set path to the Web application client_secret_*.json file you downloaded from the
+        # Google API Console: https://console.developers.google.com/apis/credentials
+        
+        CLIENT_SECRET_FILE = './client_secret_536409948532-mmh90bq0eajc2m4huog2dlisn2ecp1f2.apps.googleusercontent.com.json'
 
-        #check wether a user with this email already exists
-        user = User.objects.filter(email=email)
-        # user does not exist create one
-        if not user:
-            response = register(email, password)
-            # The response from server can be empty (in case of timeout)
-            try:
-                print("response.json(): {}".format(response.json()))
-                # account created with no error
-                if response.json()["data"]["accountRegister"]["accountErrors"]==[]:
-                    #login 
-                    response = login(email, password)
-                    return_data = json.dumps(response)
-                    token = response["data"]["tokenCreate"]["token"]
-                    
-                    #add first name to the account
-                    response = add_first_name(first_name, token)
-                    
-                    # add account type social_auth in metadata
-                    user = User.objects.filter(email=email)
-                    account_data = {
-                        'account_type' : 'social_auth'
-                    }
-                    user.store_value_in_metadata(account_data)
+        # Exchange auth code for access token, refresh token, and ID token
+        credentials = client.credentials_from_clientsecrets_and_code(
+            CLIENT_SECRET_FILE,
+            ['https://www.googleapis.com/auth/drive.appdata', 'profile', 'email'],
+            auth_code)
 
-                    return HttpResponse(return_data, content_type='application/json')
-                # error while registering new account
-                else:
-                    field = response.json()["data"]["accountRegister"]["accountErrors"][0]["field"]
-                    message = response.json()["data"]["accountRegister"]["accountErrors"][0]["message"]
-                    return_error = {
-                        "data" : {
-                            "tokenCreate" : {
-                                "accountErrors" : {
-                                    "field" : field,
-                                    "message" : message
-                                }
-                            }
-                        }
-                    }
-                    return_error = json.dumps(return_error)
-                    return HttpResponse(return_error, content_type='application/json')
-            # if the response from the server is empty then display error message
-            except:
-                print("json: : {}".format(json))
-        # user already exists so just login
-        else :
-            response = login(email, password)
-            return_data = json.dumps(response)
-            return HttpResponse(return_data, content_type='application/json')
+        # Call Google API
+        http_auth = credentials.authorize(httplib2.Http())
+        drive_service = discovery.build('drive', 'v3', http=http_auth)
+        appfolder = drive_service.files().get(fileId='appfolder').execute()
 
-        return HttpResponse()    
+        # Get profile info from ID token
+        userid = credentials.id_token['sub']
+        email = credentials.id_token['email']
+
+        try:
+            print("credential.access_token: {}".format(credentials.access_token))
+            return_data = {
+                'access_token' : credentials.access_token
+            }
+        except:
+            return_data = {
+                'access_token' : ''
+            }
+
+
+        return_data = json.dumps(return_data)
+        return HttpResponse(return_data, content_type='application/json')
+
+def access_token(request):
+    if request.method == 'GET':
+        # get query parameters
+        print("request.GET: {}".format(request.GET))
+        return HttpResponse()
+    else:
+        body = json.loads(request.body)
+        print("access_token: {}".format(body))
+        return HttpResponse()
 
 def login(email, password):
     query = '''

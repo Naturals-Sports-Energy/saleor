@@ -209,6 +209,7 @@ if not SECRET_KEY and DEBUG:
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "saleor.core.middleware.request_time",
     "saleor.core.middleware.discounts",
     "saleor.core.middleware.google_analytics",
@@ -228,6 +229,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.auth",
     "django.contrib.postgres",
+    "django.contrib.sessions",
     # Local apps
     "saleor.plugins",
     "saleor.account",
@@ -262,6 +264,7 @@ INSTALLED_APPS = [
     "django_countries",
     "django_filters",
     "phonenumber_field",
+    "social_django",
 ]
 
 
@@ -462,8 +465,32 @@ PLACEHOLDER_IMAGES = {
 DEFAULT_PLACEHOLDER = "images/placeholder255x255.png"
 
 AUTHENTICATION_BACKENDS = [
+    "social_core.backends.google.GoogleOAuth2", # <-
     "saleor.core.auth_backend.JSONWebTokenBackend",
+    "graphql_jwt.backends.JSONWebTokenBackend",
+    "django.contrib.auth.backends.ModelBackend",
+    
 ]
+
+# social-auth
+SOCIAL_AUTH_POSTGRES_JSONFIELD = True
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '536409948532-mmh90bq0eajc2m4huog2dlisn2ecp1f2.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'dVGY4I1Z4EYZty3zDm3iJ10A'
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'social_core.pipeline.social_auth.associate_by_email',
+)
+
 
 # CELERY SETTINGS
 CELERY_TIMEZONE = TIME_ZONE

@@ -1,5 +1,6 @@
 from graphene_federation import build_schema
 
+from .account.mutations.social_auth import OAuthMutations
 from .account.schema import AccountMutations, AccountQueries
 from .app.schema import AppMutations, AppQueries
 from .checkout.schema import CheckoutMutations, CheckoutQueries
@@ -47,6 +48,7 @@ class Query(
 
 
 class Mutation(
+    OAuthMutations,
     AccountMutations,
     AppMutations,
     CheckoutMutations,

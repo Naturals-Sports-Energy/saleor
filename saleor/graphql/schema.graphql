@@ -1544,6 +1544,8 @@ type CreateToken {
   accountErrors: [AccountError!]!
 }
 
+
+
 type CreditCard {
   brand: String!
   firstDigits: String
@@ -2577,6 +2579,7 @@ input MoveProductInput {
 }
 
 type Mutation {
+  oauthTokenCreate(backend: String!, accessToken: String!): CreateOAuthToken
   webhookCreate(input: WebhookCreateInput!): WebhookCreate
   webhookDelete(id: ID!): WebhookDelete
   webhookUpdate(id: ID!, input: WebhookUpdateInput!): WebhookUpdate

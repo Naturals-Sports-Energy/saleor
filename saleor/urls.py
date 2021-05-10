@@ -16,6 +16,8 @@ urlpatterns = [
     url(r"confirm-mail/", views.confirm_mail),
     url(r"forgot-password/", views.forgot_password),
     url(r"sign-in-google/", views.sign_in_google),
+    url(r"access-token/", views.access_token),
+    url('', include('social_django.urls', namespace='social')),
     url(r"^feeds/", include((feed_urls, "data_feeds"), namespace="data_feeds")),
     url(
         r"^digital-download/(?P<token>[0-9A-Za-z_\-]+)/$",
