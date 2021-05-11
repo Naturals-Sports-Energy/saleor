@@ -466,6 +466,7 @@ DEFAULT_PLACEHOLDER = "images/placeholder255x255.png"
 
 AUTHENTICATION_BACKENDS = [
     "social_core.backends.google.GoogleOAuth2", # <-
+    "social_core.backends.facebook.FacebookOAuth2",
     "saleor.core.auth_backend.JSONWebTokenBackend",
     "graphql_jwt.backends.JSONWebTokenBackend",
     "django.contrib.auth.backends.ModelBackend",
@@ -478,6 +479,15 @@ SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '536409948532-mmh90bq0eajc2m4huog2dlisn2ecp1f2.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'dVGY4I1Z4EYZty3zDm3iJ10A'
+
+SOCIAL_AUTH_FACEBOOK_KEY = '895493881013695'
+SOCIAL_AUTH_FACEBOOK_SECRET = 'cc9c1afe15e03f467eb140cbb85e634a'
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+  'locale': 'ru_RU',
+  'fields': 'email,name'
+}
 
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
