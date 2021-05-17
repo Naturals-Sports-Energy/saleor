@@ -316,23 +316,26 @@ def soap(request):
                     <Password>{}</Password>
                 </eWAYHeader>
             </soap:Header>
-            <soap:Body>
-                <CreateRebillEvent xmlns="http://www.eway.com.au/gateway/rebill/manageRebill">
-                    <RebillCustomerID>60001545</RebillCustomerID>
-                    <RebillInvRef>ref123</RebillInvRef>
-                    <RebillInvDes></RebillInvDes>
-                    <RebillCCName>test</RebillCCName>
-                    <RebillCCNumber>4444333322221111</RebillCCNumber>
-                    <RebillCCExpMonth>07</RebillCCExpMonth>
-                    <RebillCCExpYear>07</RebillCCExpYear>
-                    <RebillInitAmt>100</RebillInitAmt>
-                    <RebillInitDate>08/06/2015</RebillInitDate>
-                    <RebillRecurAmt>100</RebillRecurAmt>
-                    <RebillStartDate>05/06/2015</RebillStartDate>
-                    <RebillInterval>1</RebillInterval>
-                    <RebillIntervalType>1</RebillIntervalType>
-                    <RebillEndDate>08/07/2017</RebillEndDate>
-                </CreateRebillEvent>
+             <soap:Body>
+                <CreateRebillCustomer xmlns="http://www.eway.com.au/gateway/rebill/manageRebill">
+                    <customerTitle>Mr</customerTitle>
+                    <customerFirstName>Joe</customerFirstName>
+                    <customerLastName>Bloggs</customerLastName>
+                    <customerAddress>Bloggs Enterprise</customerAddress>
+                    <customerSuburb>Capital City</customerSuburb>
+                    <customerState>ACT</customerState>
+                    <customerCompany>Bloggs</customerCompany>
+                    <customerPostCode>2111</customerPostCode>
+                    <customerCountry>Australia</customerCountry>
+                    <customerEmail>test@eway.com.au</customerEmail>
+                    <customerFax>0298989898</customerFax>
+                    <customerPhone1>0297979797</customerPhone1>
+                    <customerPhone2></customerPhone2>
+                    <customerRef>Ref123</customerRef>
+                    <customerJobDesc></customerJobDesc>
+                    <customerComments>Please Ship ASASP</customerComments>
+                    <customerURL>https://www.eway.com.au</customerURL>
+                </CreateRebillCustomer>
             </soap:Body>
             </soap:Envelope>""".format(customerId, username, password)
 
