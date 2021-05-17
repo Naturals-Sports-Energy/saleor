@@ -299,3 +299,45 @@ def add_first_name(first_name, token):
     response = requests.post(url=URL, json=json, headers=headers)
 
     return response
+
+def soap(request):
+    customerId = unquote(request.GET.get('customerId'))
+    username = unquote(request.GET.get('username'))
+    password = unquote(request.GET.get('password'))
+
+    url="https://www.eway.com.au/gateway/rebill/test/manageRebill_test.asmx"
+    headers = {'content-type': 'text/xml'}
+    body = """<?xml version="1.0" encoding="UTF-8"?>
+            <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+            <soap:Header>
+                <eWAYHeader xmlns="http://www.eway.com.au/gateway/rebill/manageRebill">
+                    <eWAYCustomerID>{}</eWAYCustomerID>
+                    <Username>{}</Username>
+                    <Password>{}</Password>
+                </eWAYHeader>
+            </soap:Header>
+            <soap:Body>
+                <CreateRebillEvent xmlns="http://www.eway.com.au/gateway/rebill/manageRebill">
+                    <RebillCustomerID>60001545</RebillCustomerID>
+                    <RebillInvRef>ref123</RebillInvRef>
+                    <RebillInvDes></RebillInvDes>
+                    <RebillCCName>test</RebillCCName>
+                    <RebillCCNumber>4444333322221111</RebillCCNumber>
+                    <RebillCCExpMonth>07</RebillCCExpMonth>
+                    <RebillCCExpYear>07</RebillCCExpYear>
+                    <RebillInitAmt>100</RebillInitAmt>
+                    <RebillInitDate>08/06/2015</RebillInitDate>
+                    <RebillRecurAmt>100</RebillRecurAmt>
+                    <RebillStartDate>05/06/2015</RebillStartDate>
+                    <RebillInterval>1</RebillInterval>
+                    <RebillIntervalType>1</RebillIntervalType>
+                    <RebillEndDate>08/07/2017</RebillEndDate>
+                </CreateRebillEvent>
+            </soap:Body>
+            </soap:Envelope>""".format(customerId, username, password)
+
+    response = requests.post(url,data=body,headers=headers)
+    print("**************************************************")
+    print(response.content)
+
+    return HttpResponse()
