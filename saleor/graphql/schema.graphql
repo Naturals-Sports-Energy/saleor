@@ -69,6 +69,20 @@ enum AccountErrorCode {
   JWT_INVALID_CSRF_TOKEN
 }
 
+input SubscriptionCreateInput{
+  shipping_method_id: ID!
+  shipping_address: AddressInput!
+  billing_address: AddressInput!
+  variant_id: String!
+  quantity: Int!
+  frequency: SubscriptionFrequencyEnum!
+}
+
+enum SubscriptionFrequencyEnum{
+  MONTHLY
+  WEEKLY
+}
+
 input AccountInput {
   firstName: String
   lastName: String
@@ -2579,6 +2593,7 @@ input MoveProductInput {
 }
 
 type Mutation {
+  subscriptionCreate(input: SubscriptionCreateInput!): SubscriptionCreate
   oauthTokenCreate(backend: String!, accessToken: String!): CreateOAuthToken
   webhookCreate(input: WebhookCreateInput!): WebhookCreate
   webhookDelete(id: ID!): WebhookDelete
