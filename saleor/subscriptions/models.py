@@ -24,10 +24,18 @@ class Subscription(ModelWithMetadata):
     shipping_address = models.JSONField(default=None)
 
     shipping_method_id = models.CharField(max_length=32)
-    variant_id = models.CharField(max_length=32)
+    variant = models.ForeignKey(
+        "product.ProductVariant",
+        related_name="subscriptions",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
     quantity = models.IntegerField()
 
     token_customer_id = models.CharField(max_length=32, default=None)
+
+    next_order_date = models.DateTimeField(default=now)
 
     frequency = models.CharField(
         max_length=255,

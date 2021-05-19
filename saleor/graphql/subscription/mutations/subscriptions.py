@@ -1,11 +1,13 @@
 import graphene
 from graphene_django import DjangoObjectType
 from ...account.types import AddressInput
+from ....product.models import ProductVariant
 from ....subscriptions.models import Subscription
 from ....subscriptions import SubscriptionFrequency, SubscriptionStatus
 from ....graphql.core.enums import to_enum
 import graphene
 from django.conf import settings
+from graphql_relay import from_global_id
 
 SubscriptionFrequencyEnum = to_enum(SubscriptionFrequency, type_name="SubscriptionFrequencyEnum")
 
@@ -42,11 +44,14 @@ class SubscriptionCreate(graphene.Mutation):
         user = info.context.user
         print("******************************")
         print("frequency: {}".format(input.frequency))
+        _, pk = from_global_id(input.variant_id)
+        variant=ProductVariant.objects.get(pk=pk)
+
         subscription = Subscription(
             billing_address= input.billing_address,
             shipping_address= input.shipping_address,
             shipping_method_id=input.shipping_method_id,
-            variant_id=input.variant_id,
+            variant=variant,
             quantity=input.quantity,
             user=user,
             token_customer_id=input.token_customer_id,
@@ -55,6 +60,7 @@ class SubscriptionCreate(graphene.Mutation):
         subscription.save()
         # Notice we return an instance of this mutation
         return SubscriptionCreate(subscription=subscription)
+        
     @classmethod
     def get_address(cls, address):
         first_name = address.first_name
