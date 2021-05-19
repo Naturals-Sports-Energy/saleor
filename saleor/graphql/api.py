@@ -2,6 +2,7 @@ from graphene_federation import build_schema
 
 from .account.mutations.social_auth import OAuthMutations
 from .subscription.mutations.subscriptions import SubscriptionMutations
+from .subscription.schema import SubscriptionQueries
 from .account.schema import AccountMutations, AccountQueries
 from .app.schema import AppMutations, AppQueries
 from .checkout.schema import CheckoutMutations, CheckoutQueries
@@ -25,6 +26,7 @@ from .webhook.schema import WebhookMutations, WebhookQueries
 
 
 class Query(
+    SubscriptionQueries,
     AccountQueries,
     AppQueries,
     CheckoutQueries,
