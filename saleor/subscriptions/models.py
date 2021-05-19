@@ -27,6 +27,8 @@ class Subscription(ModelWithMetadata):
     variant_id = models.CharField(max_length=32)
     quantity = models.IntegerField()
 
+    token_customer_id = models.CharField(max_length=32, default=None)
+
     frequency = models.CharField(
         max_length=255,
         choices=[

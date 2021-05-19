@@ -29,6 +29,7 @@ class SubscriptionCreateInput(graphene.InputObjectType):
     frequency = graphene.Argument(
             SubscriptionFrequencyEnum, required=True, description="Subscription Frequency"
     )
+    token_customer_id = graphene.ID(required=True, description="TokenCustomerID")
 
 class SubscriptionCreate(graphene.Mutation):
     class Arguments:
@@ -48,6 +49,7 @@ class SubscriptionCreate(graphene.Mutation):
             variant_id=input.variant_id,
             quantity=input.quantity,
             user=user,
+            token_customer_id=input.token_customer_id,
             frequency=input.frequency
         )
         subscription.save()

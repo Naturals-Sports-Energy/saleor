@@ -73,9 +73,10 @@ input SubscriptionCreateInput{
   shipping_method_id: ID!
   shipping_address: AddressInput!
   billing_address: AddressInput!
-  variant_id: String!
+  variant_id: ID!
   quantity: Int!
   frequency: SubscriptionFrequencyEnum!
+  token_customer_id: ID!
 }
 
 enum SubscriptionFrequencyEnum{
