@@ -8,6 +8,8 @@ from ....graphql.core.enums import to_enum
 import graphene
 from django.conf import settings
 from graphql_relay import from_global_id
+from . import get_next_order_date
+from datetime import date
 
 SubscriptionFrequencyEnum = to_enum(SubscriptionFrequency, type_name="SubscriptionFrequencyEnum")
 
@@ -46,6 +48,8 @@ class SubscriptionCreate(graphene.Mutation):
         print("frequency: {}".format(input.frequency))
         _, pk = from_global_id(input.variant_id)
         variant=ProductVariant.objects.get(pk=pk)
+        today = date.today()
+        next_order_date = get_next_order_date(today, input.frequency)
 
         subscription = Subscription(
             billing_address= input.billing_address,
@@ -55,7 +59,8 @@ class SubscriptionCreate(graphene.Mutation):
             quantity=input.quantity,
             user=user,
             token_customer_id=input.token_customer_id,
-            frequency=input.frequency
+            frequency=input.frequency,
+            next_order_date=next_order_date
         )
         subscription.save()
         # Notice we return an instance of this mutation
