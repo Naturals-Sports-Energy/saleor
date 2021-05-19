@@ -8,6 +8,7 @@ RUN apt-get -y update \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
+COPY my_wheels /app/my_wheels
 COPY requirements.txt /app/
 WORKDIR /app
 RUN pip install -r requirements.txt
@@ -35,6 +36,7 @@ RUN mkdir -p /app/media /app/static \
 
 COPY --from=build-python /usr/local/lib/python3.8/site-packages/ /usr/local/lib/python3.8/site-packages/
 COPY --from=build-python /usr/local/bin/ /usr/local/bin/
+COPY --from=build-python /app/my_wheels /app/
 COPY . /app
 WORKDIR /app
 
