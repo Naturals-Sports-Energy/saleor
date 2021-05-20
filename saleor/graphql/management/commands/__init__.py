@@ -17,8 +17,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 URL = os.environ.get("GRAPHQL_URL", "http://0.0.0.0:8000/graphql/")
-EMAIL = os.environ.get("ADMIN_EMAIL")
-PASSWORD = os.environ.get("ADMIN_PASSWORD")
+EMAIL = os.environ.get("USERNAME")
+PASSWORD = os.environ.get("PASSWORD")
 EWAY_USERNAME = os.environ.get("EWAY_USERNAME")
 EWAY_PASSWORD = os.environ.get("EWAY_PASSWORD")
 
