@@ -5,7 +5,7 @@ from prices import Money, TaxedMoney, TaxedMoneyRange
 from ...discount import DiscountInfo
 from decimal import Decimal
 import requests
-from ...order.models import Order
+from ...order.models import Order, OrderLine
 import logging
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse
@@ -143,7 +143,8 @@ class SendlePlugin(BasePlugin):
             'weight_units' : 'kg',
             'first_mile_option' : 'pickup'
         }
-
+        print("*********************************")
+        print("shipping price calcualted")
         HEADERS = {'Content-Type': 'application/json'}
 
         total_weight = 0
@@ -402,6 +403,75 @@ class SendlePlugin(BasePlugin):
 
         return HttpResponse()
 
+    def calculate_order_shipping(
+            self, order: "Order", previous_value: TaxedMoney
+        ) -> TaxedMoney:
 
+        print("****************************")
+        print("calculate_order_shipping.")
+        base_shipping_price = previous_value
+        
+        if self._skip_plugin(previous_value):
+            return base_shipping_price
 
+        if not _validate_order(order):
+            return base_shipping_price
+        lines = list(order)
+        currency =  "AUD"                     #str(response.get("currencyCode"))
+        return self._calculate_order_shipping(
+            currency, order, lines, base_shipping_price
+        )
 
+    def _calculate_order_shipping(
+        self, 
+        currency: str, 
+        order:"Order", 
+        lines: Iterable["OrderLine"], 
+        shipping_price: TaxedMoney
+    ) -> TaxedMoney:
+        print("****************************")
+        print("_calculate_order_shipping.")
+        shipping_tax = Decimal(0.0)
+        shipping_net = Decimal(0.0) #shipping_price.net.amount
+
+        PARAMS = {
+            'pickup_suburb': self.config.pickup_suburb,
+            'pickup_postcode': self.config.pickup_postcode,
+            'pickup_country' : self.config.pickup_country,
+            'delivery_suburb' : order.shipping_address.city,
+            'delivery_postcode' : order.shipping_address.postal_code,
+            'delivery_country' : 'AU',
+            'weight_value' : '0.0',
+            'weight_units' : 'kg',
+            'first_mile_option' : 'pickup'
+        }
+        print("*********************************")
+        print("shipping price calcualted")
+        HEADERS = {'Content-Type': 'application/json'}
+
+        total_weight = 0
+        for line in lines:
+            weight = str.split(str(line.variant.weight))[0]
+            if weight is None:
+                weight = 0
+            total_weight += float(weight)
+
+        PARAMS['weight_value'] = total_weight
+
+        response = api_get_request(
+                url = urljoin(get_api_url(self.config.use_sandbox), 'quote'),
+                params = PARAMS,
+                headers = HEADERS,
+                config = self.config
+            )
+        try:
+            shipping_net = Decimal(response[0]['quote']['net']['amount'])
+            shipping_tax = Decimal(response[0]['quote']['tax']['amount'])
+        except:
+            print("*********************************************************")
+            print("params: {}".format(PARAMS))
+            print("response: {}".format(response))
+        shipping_gross = Money(amount=shipping_net + shipping_tax, currency=currency)
+        shipping_net = Money(amount=shipping_net, currency=currency)
+
+        return TaxedMoney(net=shipping_net, gross=shipping_gross)

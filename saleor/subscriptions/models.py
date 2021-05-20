@@ -20,8 +20,12 @@ class Subscription(ModelWithMetadata):
         on_delete=models.SET_NULL,
     )
 
-    billing_address = models.JSONField(default=None)
-    shipping_address = models.JSONField(default=None)
+    billing_address = models.ForeignKey(
+        Address, related_name="+", null=True, blank=True, on_delete=models.SET_NULL
+    )
+    shipping_address = models.ForeignKey(
+        Address, related_name="+", null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     shipping_method_id = models.CharField(max_length=32)
     variant = models.ForeignKey(
@@ -35,7 +39,7 @@ class Subscription(ModelWithMetadata):
 
     token_customer_id = models.CharField(max_length=32, default=None)
 
-    next_order_date = models.DateTimeField(default=now)
+    next_order_date = models.DateField(default=now)
 
     frequency = models.CharField(
         max_length=255,

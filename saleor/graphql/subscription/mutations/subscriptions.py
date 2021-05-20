@@ -1,5 +1,6 @@
 import graphene
 from graphene_django import DjangoObjectType
+from ....account.models import Address
 from ...account.types import AddressInput
 from ....product.models import ProductVariant
 from ....subscriptions.models import Subscription
@@ -50,10 +51,12 @@ class SubscriptionCreate(graphene.Mutation):
         variant=ProductVariant.objects.get(pk=pk)
         today = date.today()
         next_order_date = get_next_order_date(today, input.frequency)
+        billing_address= cls.get_address(input.billing_address),
+        shipping_address= cls.get_address(input.shipping_address),
 
         subscription = Subscription(
-            billing_address= input.billing_address,
-            shipping_address= input.shipping_address,
+            billing_address= billing_address[0],
+            shipping_address= shipping_address[0],
             shipping_method_id=input.shipping_method_id,
             variant=variant,
             quantity=input.quantity,
@@ -79,6 +82,22 @@ class SubscriptionCreate(graphene.Mutation):
         country = address.country
         country_area = address.country_area
         phone = address.phone
+
+        address =  Address(
+            first_name=first_name,
+            last_name=last_name,
+            company_name=company_name,
+            street_address_1=street_address_1,
+            street_address_2=street_address_2,
+            city=city,
+            city_area=city_area,
+            postal_code=postal_code,
+            country=country,
+            country_area=country_area,
+            phone=phone
+        )
+        address.save()
+        return address
 
 class SubscriptionMutations(graphene.ObjectType):
     subscription_create = SubscriptionCreate.Field()
