@@ -9,7 +9,6 @@ from ...api import schema
 import json
 import requests
 import os
-from ....payment.gateways.eway.plugin import EwayGatewayPlugin
 from urllib.parse import urljoin
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
 import logging
@@ -291,6 +290,9 @@ def check_payment_status(AccessCode, order_token, order_id, token):
     if is_success:
         if order_mark_paid(order_id, token):
             draft_order_complete(order_id, token)
+            return True
+    
+    return False
 
 
 def order_mark_paid(order_id, token):
@@ -335,4 +337,4 @@ def draft_order_complete(order_id, token):
     else:
         return False
 
-
+    

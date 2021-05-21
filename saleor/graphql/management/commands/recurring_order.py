@@ -6,11 +6,12 @@ from datetime import datetime
 from ...api import schema
 from freezegun import freeze_time
 from . import create_draft_order, get_access_code,login,update_order_shipping,post_payment_form,check_payment_status
+from ...subscription.mutations import get_next_order_date
 
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 
-    @freeze_time("2021-06-20")
+    #@freeze_time("2021-06-20")
     def handle(self, *args, **options):
         # get active subscriptions from database 
         subscriptions = Subscription.objects.filter(status="active").filter(next_order_date=datetime.today().date())
@@ -55,7 +56,13 @@ class Command(BaseCommand):
             AccessCode = orders[subscription.id]["AccessCode"]
             order_token = orders[subscription.id]["order_token"]
             order_id = orders[subscription.id]["order_id"]
-            check_payment_status(AccessCode, order_token, order_id, token)
+            if check_payment_status(AccessCode, order_token, order_id, token):
+                #update next_order_date
+                subscription.next_order_date = get_next_order_date(
+                    subscription.next_order_date, 
+                    subscription.frequency
+                )
+                subscription.save()
 
 
         self.stdout.write(self.style.SUCCESS('Successfully closed poll '))
