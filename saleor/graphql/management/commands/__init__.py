@@ -1,3 +1,4 @@
+from dis import dis
 from re import sub
 from django.db.models.aggregates import Variance
 from django.http import response
@@ -12,6 +13,7 @@ import os
 from urllib.parse import urljoin
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
 import logging
+from ....discount.models import Voucher
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +141,15 @@ def create_draft_order(subscription, token):
 
     price = float(subscription.variant.price.amount)
     print("price: {}".format(price))
-    discount = price*0.2
+    
+    # apply 20% instant discount
+    # discount = (price*0.2)*subscription.quantity
+
+    # apply 20% off voucher
+    voucher = os.environ.get("RECURRING_20_OFF")
+    voucher_local_id = Voucher.objects.filter(code=voucher).first().id
+    voucher_global_id = graphene.Node.to_global_id("Voucher", voucher_local_id)
+    
     variables = {
         "input": {
             "billingAddress": {
@@ -170,15 +180,29 @@ def create_draft_order(subscription, token):
             },
             "shippingMethod": subscription.shipping_method_id,
             "lines": [{
-                "quantity": 1,
+                "quantity": subscription.quantity,
                 "variantId": graphene.Node.to_global_id("ProductVariant", subscription.variant.id) 
             }],
-            "discount": discount,
+            "voucher": voucher_global_id,
             "user": graphene.Node.to_global_id("User", subscription.user.id)
         }
     }
     response = graphql_query(url=URL, query=query, variables=variables, token=token)
-    response = response["data"]["draftOrderCreate"]["order"]
+    try:
+        response = response["data"]["draftOrderCreate"]["order"]
+    except:
+        error_message=""
+        if "error" in response:  # type: ignore
+            error_message = response["error"]
+            if "error_description" in response:
+                error_message = error_message + ". " + response["error_description"]
+            if "message" in response:
+                error_message = error_message + ". " + response["message"]
+            if "messages" in response:
+                error_message = error_message + ". " + str(response["messages"])
+            if "error_description" not in response and "message" not in response:
+                error_message = error_message + "json response: " + response            
+        print("Sendle response contains errors {}".format(response))
 
     return response
 

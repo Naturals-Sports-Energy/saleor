@@ -11,7 +11,7 @@ from ...subscription.mutations import get_next_order_date
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 
-    #@freeze_time("2021-06-20")
+    @freeze_time("2021-06-21")
     def handle(self, *args, **options):
         # get active subscriptions from database 
         subscriptions = Subscription.objects.filter(status="active").filter(next_order_date=datetime.today().date())
