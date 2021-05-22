@@ -21,14 +21,8 @@ class SubscriptionType(DjangoObjectType):
 
 class SubscriptionCreateInput(graphene.InputObjectType):
     shipping_method_id = graphene.ID(required=True, description="Shipping method.")
-    shipping_address = AddressInput(
-        description=(
-            "The mailing address to where the checkout will be shipped. "
-            "Note: the address will be ignored if the checkout "
-            "doesn't contain shippable items."
-        )
-    )
-    billing_address = AddressInput(description="Billing address of the customer.")
+    shipping_address_id = graphene.ID(required=True, description="shipping address id")
+    billing_address_id = graphene.ID(required=True, description="billing address id")
     variant_id = graphene.ID(required=True, description="Shipping method.")
     quantity = graphene.Int(required=True)
     frequency = graphene.Argument(
@@ -47,16 +41,30 @@ class SubscriptionCreate(graphene.Mutation):
         user = info.context.user
         print("******************************")
         print("frequency: {}".format(input.frequency))
+        # product variant
         _, pk = from_global_id(input.variant_id)
         variant=ProductVariant.objects.get(pk=pk)
+
+        # billing address
+        _, pk = from_global_id(input.billing_address_id)
+        billing_address=Address.objects.get(pk=pk)
+        billing_address.pk = None
+        billing_address.save()
+
+        # shipping address
+        _, pk = from_global_id(input.billing_address_id)
+        shipping_address=Address.objects.get(pk=pk)
+        shipping_address.pk = None
+        shipping_address.save()
+
         today = date.today()
         next_order_date = get_next_order_date(today, input.frequency)
-        billing_address= cls.get_address(input.billing_address),
-        shipping_address= cls.get_address(input.shipping_address),
+        # billing_address= cls.get_address(input.billing_address),
+        # shipping_address= cls.get_address(input.shipping_address),
 
         subscription = Subscription(
-            billing_address= billing_address[0],
-            shipping_address= shipping_address[0],
+            billing_address= billing_address,
+            shipping_address= shipping_address,
             shipping_method_id=input.shipping_method_id,
             variant=variant,
             quantity=input.quantity,
