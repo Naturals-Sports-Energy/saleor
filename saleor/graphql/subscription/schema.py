@@ -2,6 +2,7 @@ from saleor import subscriptions
 import graphene
 from graphene_django import DjangoObjectType
 from graphene import relay
+from graphene_django.fields import DjangoConnectionField
 from ..core.fields import FilterInputConnectionField
 from ..core.types import SortInputObjectType
 from ..core.types import FilterInputObjectType
@@ -42,7 +43,7 @@ class SubscriptionNode(DjangoObjectType):
 
 class SubscriptionQueries(graphene.ObjectType):
     subscription = relay.Node.Field(SubscriptionNode)
-    subscriptions = FilterInputConnectionField(
+    subscriptions = DjangoConnectionField(
         SubscriptionNode,
         sort_by=SubscriptionSortingInput(description="Sort orders."),
         filter=SubscriptionFilterInput(description="Filtering options for orders."),
