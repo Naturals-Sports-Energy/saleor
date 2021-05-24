@@ -31,9 +31,6 @@ def setup_periodic_tasks(sender, **kwargs):
         recurring_order.s(),
     )
 
-    # Calls test('hello') every 10 seconds.
-    sender.add_periodic_task(10.0, test.s('hello'), name='add every 10')
-
 @app.task
 def test(arg):
     print(arg)
@@ -114,7 +111,11 @@ def login():
     }
 
     response = graphql_query(url=URL, query=query, variables=variables)
-    token = response["data"]["tokenCreate"]["token"]
+    
+    try:
+        token = response["data"]["tokenCreate"]["token"]
+    except:
+        print("login faild, response: {}".format(response))
     customerId = response["data"]["tokenCreate"]["user"]["id"]
     
     return token
@@ -170,8 +171,9 @@ def graphql_query(url,query,variables,token=None):
         if "error" in response:  # type: ignore
             print("Graphql response contains errors %s", json_response)
             return json_response
-    except requests.exceptions.RequestException:
-        print("Fetching query result failed %s", url)
+    except requests.exceptions.RequestException as e:
+        print("Fetching query result failed, url: {}".format(url))
+        print("json: {}, headers: {}, exception: {}".format(json, headers, e))
         return {}
     except json.JSONDecodeError:
         content = response.content if response else "Unable to find the response"
@@ -407,7 +409,11 @@ def order_mark_paid(order_id, token):
     }
 
     response = graphql_query(url=URL, query=query, variables=variables, token=token)
-    is_paid = response["data"]["orderMarkAsPaid"]["order"]["isPaid"]
+    try:    
+        is_paid = response["data"]["orderMarkAsPaid"]["order"]["isPaid"]
+    except Exception as e:
+        print("could not mark as paid")
+        print("response: {}, exception: {}".format(response,e))
 
     return is_paid
 
