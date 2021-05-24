@@ -170,9 +170,9 @@ git clone https://github.com/Naturals-Sports-Energy/saleor.git
 ```
 cd saleor
 ```
-5. Chekcout branch ```nirmal/feature/recurring_order```
+5. Chekcout branch ```development```
 ```
-git checkout nirmal/feature/recurring_order
+git checkout development
 ```
 6. Paste the ```common.env``` file in the root directory ```saleor```, 
 make sure that the value for  ```GRAPHQL_URL``` in ```common.env``` is updated to ```https://<host>:8000/graphql/``` where ```<host>``` is the ip address
