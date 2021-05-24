@@ -157,3 +157,27 @@ Some situations do call for extra code; we can cover exotic use cases or build y
 #### Crafted with ❤️ by [Mirumee Software](http://mirumee.com)
 
 hello@mirumee.com
+
+## Run on Docker 
+
+1. [Install Docker Engine on Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
+2. [Install Docker Compose](https://docs.docker.com/compose/install/)
+3. Clone this repo
+```
+git clone https://github.com/Naturals-Sports-Energy/saleor.git
+```
+4. Change directory to ```saleor```
+```
+cd saleor
+```
+5. Chekcout branch ```nirmal/feature/recurring_order```
+```
+git checkout nirmal/feature/recurring_order
+```
+6. Paste the ```common.env``` file in the root directory ```saleor```, 
+make sure that the value for  ```GRAPHQL_URL``` in ```common.env``` is updated to ```https://<host>:8000/graphql/``` where ```<host>``` is the ip address
+7. Run the docker compose command
+```
+docker-compose up -d
+```
+  

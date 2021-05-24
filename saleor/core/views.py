@@ -299,3 +299,48 @@ def add_first_name(first_name, token):
     response = requests.post(url=URL, json=json, headers=headers)
 
     return response
+
+def soap(request):
+    customerId = unquote(request.GET.get('customerId'))
+    username = unquote(request.GET.get('username'))
+    password = unquote(request.GET.get('password'))
+
+    url="https://www.eway.com.au/gateway/rebill/test/manageRebill_test.asmx"
+    headers = {'content-type': 'text/xml'}
+    body = """<?xml version="1.0" encoding="UTF-8"?>
+            <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+            <soap:Header>
+                <eWAYHeader xmlns="http://www.eway.com.au/gateway/rebill/manageRebill">
+                    <eWAYCustomerID>{}</eWAYCustomerID>
+                    <Username>{}</Username>
+                    <Password>{}</Password>
+                </eWAYHeader>
+            </soap:Header>
+             <soap:Body>
+                <CreateRebillCustomer xmlns="http://www.eway.com.au/gateway/rebill/manageRebill">
+                    <customerTitle>Mr</customerTitle>
+                    <customerFirstName>Joe</customerFirstName>
+                    <customerLastName>Bloggs</customerLastName>
+                    <customerAddress>Bloggs Enterprise</customerAddress>
+                    <customerSuburb>Capital City</customerSuburb>
+                    <customerState>ACT</customerState>
+                    <customerCompany>Bloggs</customerCompany>
+                    <customerPostCode>2111</customerPostCode>
+                    <customerCountry>Australia</customerCountry>
+                    <customerEmail>test@eway.com.au</customerEmail>
+                    <customerFax>0298989898</customerFax>
+                    <customerPhone1>0297979797</customerPhone1>
+                    <customerPhone2></customerPhone2>
+                    <customerRef>Ref123</customerRef>
+                    <customerJobDesc></customerJobDesc>
+                    <customerComments>Please Ship ASASP</customerComments>
+                    <customerURL>https://www.eway.com.au</customerURL>
+                </CreateRebillCustomer>
+            </soap:Body>
+            </soap:Envelope>""".format(customerId, username, password)
+
+    response = requests.post(url,data=body,headers=headers)
+    print("**************************************************")
+    print(response.content)
+
+    return HttpResponse()

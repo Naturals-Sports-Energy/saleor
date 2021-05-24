@@ -1,19 +1,16 @@
-from dis import dis
-from re import sub
-from django.db.models.aggregates import Variance
-from django.http import response
-
-from requests.api import head
-from saleor import discount, order
+from celery.schedules import crontab
+from ..celeryconf import app
+from celery.utils.log import get_task_logger
+from ..subscriptions.models import Subscription
+from datetime import datetime
+from ..graphql.subscription.mutations import get_next_order_date
 import graphene
-from ...api import schema
-import json
 import requests
 import os
 from urllib.parse import urljoin
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict,List
 import logging
-from ....discount.models import Voucher
+from saleor.discount.models import Voucher
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +19,79 @@ EMAIL = os.environ.get("USERNAME")
 PASSWORD = os.environ.get("PASSWORD")
 EWAY_USERNAME = os.environ.get("EWAY_USERNAME")
 EWAY_PASSWORD = os.environ.get("EWAY_PASSWORD")
+
+logger = get_task_logger(__name__)
+
+
+@app.on_after_finalize.connect
+def setup_periodic_tasks(sender, **kwargs):
+    # Execute daily at midnight.
+    sender.add_periodic_task(
+        crontab(minute=0, hour=0),
+        recurring_order.s(),
+    )
+
+@app.task
+def test(arg):
+    print(arg)
+
+@app.task
+def recurring_order():
+    # get active subscriptions from database 
+    subscriptions = Subscription.objects.filter(status="active").filter(next_order_date=datetime.today().date())
+    print(subscriptions)
+
+    orders = {}
+
+    #admin login to get token
+    token = login()
+    
+    # create draftOrders for each of the subscriptions
+    for subscription in subscriptions:
+        order = create_draft_order(subscription,token)
+        orders[subscription.id] = {}
+        orders[subscription.id]["order_id"] = order["id"]
+        orders[subscription.id]["order_token"] = order["token"]
+        total_price = update_order_shipping(order["id"], subscription.shipping_method_id, token)
+        totalPrice_inCents = int(total_price*100)
+        orders[subscription.id]["total_price"] = totalPrice_inCents
+
+    print(orders)
+
+    # generate access code for each subscription
+
+    for subscription in subscriptions:
+        total_price = orders[subscription.id]["total_price"]
+        response = get_access_code(subscription, total_price)
+        orders[subscription.id]["AccessCode"] = response["AccessCode"]
+        orders[subscription.id]["FormActionURL"] = response["FormActionURL"]
+        
+
+    #post payment details form
+
+    for subscription in subscriptions:
+        AccessCode = orders[subscription.id]["AccessCode"]
+        FormActionURL = orders[subscription.id]["FormActionURL"]
+        post_payment_form(AccessCode, FormActionURL)
+
+
+    #check payment status and place order if paid 
+    for subscription in subscriptions:
+        AccessCode = orders[subscription.id]["AccessCode"]
+        order_token = orders[subscription.id]["order_token"]
+        order_id = orders[subscription.id]["order_id"]
+        if check_payment_status(AccessCode, order_token, order_id, token):
+            #update next_order_date
+            subscription.next_order_date = get_next_order_date(
+                subscription.next_order_date, 
+                subscription.frequency
+            )
+            subscription.save()
+
+
+    logger.info("Successfully Placed Recurring Orders.")
+
+# Helper Functions
 
 def login():
     query = """
@@ -41,7 +111,11 @@ def login():
     }
 
     response = graphql_query(url=URL, query=query, variables=variables)
-    token = response["data"]["tokenCreate"]["token"]
+    
+    try:
+        token = response["data"]["tokenCreate"]["token"]
+    except:
+        print("login faild, response: {}".format(response))
     customerId = response["data"]["tokenCreate"]["user"]["id"]
     
     return token
@@ -97,8 +171,9 @@ def graphql_query(url,query,variables,token=None):
         if "error" in response:  # type: ignore
             print("Graphql response contains errors %s", json_response)
             return json_response
-    except requests.exceptions.RequestException:
-        print("Fetching query result failed %s", url)
+    except requests.exceptions.RequestException as e:
+        print("Fetching query result failed, url: {}".format(url))
+        print("json: {}, headers: {}, exception: {}".format(json, headers, e))
         return {}
     except json.JSONDecodeError:
         content = response.content if response else "Unable to find the response"
@@ -334,7 +409,11 @@ def order_mark_paid(order_id, token):
     }
 
     response = graphql_query(url=URL, query=query, variables=variables, token=token)
-    is_paid = response["data"]["orderMarkAsPaid"]["order"]["isPaid"]
+    try:    
+        is_paid = response["data"]["orderMarkAsPaid"]["order"]["isPaid"]
+    except Exception as e:
+        print("could not mark as paid")
+        print("response: {}, exception: {}".format(response,e))
 
     return is_paid
 
@@ -360,5 +439,3 @@ def draft_order_complete(order_id, token):
         return True
     else:
         return False
-
-    
