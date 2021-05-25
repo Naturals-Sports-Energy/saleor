@@ -25,7 +25,7 @@ jobs:
             cd naturals-backend/saleor
             git pull origin development
             echo 'Pull successful'
-            echo {{ secrets.ENV_VARS }} > common.env
+            echo ${{ secrets.ENV_VARS }} > common.env
             ls
             docker-compose build
             echo 'Build successful'
