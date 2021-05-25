@@ -21,11 +21,11 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
 
           script: |
-            docker-compose stop
             cd naturals-backend/saleor
+            docker-compose stop
             git pull origin development
             echo 'Pull successful'
-            echo ${{ secrets.ENV_VARS }} > common.env
+            echo "${{ secrets.ENV_VARS }}" > common.env
             ls
             docker-compose build
             echo 'Build successful'
