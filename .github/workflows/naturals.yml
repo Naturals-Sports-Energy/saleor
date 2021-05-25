@@ -2,8 +2,8 @@ name: Saleor Build/Deploy Workflow
 
 on:
   push:
-    branch:
-      - nirmal/feature/eway_integration
+    branches:
+      - development
 
 jobs:
   digitalocean-deploy:
@@ -21,14 +21,13 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
 
           script: |
-            cd naturals/backend/saleor
-            git pull origin nirmal/feature/eway_integration
+            cd naturals-backend
+            git pull origin development
             echo 'Pull successful'
-            source venv/bin/activate
-            pip install -r requirements.txt
-            deactivate 
-            sudo systemctl daemon-reload
-            sudo systemctl restart gunicorn.service
-            sudo service nginx restart
+            docker-compose build
+            echo 'Build successful'
+            docker-compose run --rm api python manage.py migrate
+            docker-compose run --rm api python manage.py collectstatic --noinput
+            docker-compose up
             echo 'Script run successful.'
 
