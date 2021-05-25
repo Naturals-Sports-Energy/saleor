@@ -21,8 +21,7 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
 
           script: |
-            ls
-            cd naturals-backend
+            cd naturals-backend/saleor
             git pull origin development
             echo 'Pull successful'
             docker-compose build
