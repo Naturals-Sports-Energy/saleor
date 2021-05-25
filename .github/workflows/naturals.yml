@@ -21,6 +21,7 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
 
           script: |
+            ls
             cd naturals-backend
             git pull origin development
             echo 'Pull successful'
