@@ -53,7 +53,7 @@
 - [Your feedback](#your-feedback)
 - [License](#license)
 
-## What makes Saleor special?
+## What is Saleor?
 
 Saleor is a rapidly-growing open source e-commerce platform that has served high-volume companies from branches like publishing and apparel since 2012. Based on Python and Django, the latest major update introduces a modular front end powered by a GraphQL API and written with React and TypeScript.
 
