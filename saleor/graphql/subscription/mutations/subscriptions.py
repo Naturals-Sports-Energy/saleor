@@ -30,10 +30,13 @@ class SubscriptionCreateInput(graphene.InputObjectType):
     )
     token_customer_id = graphene.ID(required=True, description="TokenCustomerID")
 
+class SubscriptionCancelInput(graphene.InputObjectType):
+    subscription_id = graphene.ID(required=True, description="Subscription ID")
+
 class SubscriptionCreate(graphene.Mutation):
     class Arguments:
         input = SubscriptionCreateInput(
-            required=True, description="Fields required to create checkout."
+            required=True, description="Fields required to create Subscription."
         )
     subscription = graphene.Field(SubscriptionType)
     @classmethod
@@ -107,5 +110,28 @@ class SubscriptionCreate(graphene.Mutation):
         address.save()
         return address
 
+class SubscriptionCancel(graphene.Mutation):
+    class Arguments:
+        input = SubscriptionCancelInput(
+            required = True,
+            description="Fields required to cancel a Subscription."
+        )
+    subscription = graphene.Field(SubscriptionType)
+
+    @classmethod
+    def mutate(cls, root, info, input=None):
+        user = info.context.user
+        # get primary key from global id
+        _, pk = from_global_id(input.subscription_id)
+        # get the subscription using pk
+        subscription = Subscription.objects.get(pk=pk)
+        #update status of subscription to cancelled
+        subscription.status = SubscriptionStatus.CANCELED
+        # save the updated subscription object in the db
+        subscription.save()
+        # Notice we return an instance of this mutation
+        return SubscriptionCancel(subscription=subscription)
+
 class SubscriptionMutations(graphene.ObjectType):
     subscription_create = SubscriptionCreate.Field()
+    subscription_cancel = SubscriptionCancel.Field()
