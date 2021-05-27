@@ -41,7 +41,7 @@ class Subscription(ModelWithMetadata):
 
     next_order_date = models.DateField(default=now)
 
-    frequency_units = models.IntegerField()
+    frequency_units = models.IntegerField(default=1)
 
     frequency_period = models.CharField(
         max_length=255,
