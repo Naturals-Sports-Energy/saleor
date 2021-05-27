@@ -43,8 +43,6 @@ class SubscriptionCreate(graphene.Mutation):
     @classmethod
     def mutate(cls, root, info, input=None):
         user = info.context.user
-        print("******************************")
-        print("frequency: {}".format(input.frequency))
         # product variant
         _, pk = from_global_id(input.variant_id)
         variant=ProductVariant.objects.get(pk=pk)
