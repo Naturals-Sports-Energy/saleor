@@ -3,9 +3,10 @@ from graphene_django import DjangoObjectType
 from ....account.models import Address
 from ...account.types import AddressInput
 from ....product.models import ProductVariant
-from ....subscriptions.models import Subscription
+from ....subscriptions import models
 from ....subscriptions import SubscriptionFrequency, SubscriptionStatus
 from ....graphql.core.enums import to_enum
+from ..types import Subscription
 import graphene
 from django.conf import settings
 from graphql_relay import from_global_id
@@ -14,33 +15,30 @@ from datetime import date
 
 SubscriptionFrequencyEnum = to_enum(SubscriptionFrequency, type_name="SubscriptionFrequencyEnum")
 
-
-class SubscriptionType(DjangoObjectType):
-    class Meta:
-        model = Subscription
-
 class SubscriptionCreateInput(graphene.InputObjectType):
     shipping_method_id = graphene.ID(required=True, description="Shipping method.")
     shipping_address_id = graphene.ID(required=True, description="shipping address id")
     billing_address_id = graphene.ID(required=True, description="billing address id")
     variant_id = graphene.ID(required=True, description="Shipping method.")
     quantity = graphene.Int(required=True)
-    frequency = graphene.Argument(
+    frequency_period = graphene.Argument(
             SubscriptionFrequencyEnum, required=True, description="Subscription Frequency"
     )
+    frequency_units = graphene.Int(required=True)
     token_customer_id = graphene.ID(required=True, description="TokenCustomerID")
+
+class SubscriptionCancelInput(graphene.InputObjectType):
+    subscription_id = graphene.ID(required=True, description="Subscription ID")
 
 class SubscriptionCreate(graphene.Mutation):
     class Arguments:
         input = SubscriptionCreateInput(
-            required=True, description="Fields required to create checkout."
+            required=True, description="Fields required to create Subscription."
         )
-    subscription = graphene.Field(SubscriptionType)
+    subscription = graphene.Field(Subscription)
     @classmethod
     def mutate(cls, root, info, input=None):
         user = info.context.user
-        print("******************************")
-        print("frequency: {}".format(input.frequency))
         # product variant
         _, pk = from_global_id(input.variant_id)
         variant=ProductVariant.objects.get(pk=pk)
@@ -58,11 +56,11 @@ class SubscriptionCreate(graphene.Mutation):
         shipping_address.save()
 
         today = date.today()
-        next_order_date = get_next_order_date(today, input.frequency)
+        next_order_date = get_next_order_date(today, input.frequency_period, input.frequency_units)
         # billing_address= cls.get_address(input.billing_address),
         # shipping_address= cls.get_address(input.shipping_address),
 
-        subscription = Subscription(
+        subscription = models.Subscription(
             billing_address= billing_address,
             shipping_address= shipping_address,
             shipping_method_id=input.shipping_method_id,
@@ -70,7 +68,8 @@ class SubscriptionCreate(graphene.Mutation):
             quantity=input.quantity,
             user=user,
             token_customer_id=input.token_customer_id,
-            frequency=input.frequency,
+            frequency_period=input.frequency_period,
+            frequency_units=input.frequency_units,
             next_order_date=next_order_date
         )
         subscription.save()
@@ -107,5 +106,28 @@ class SubscriptionCreate(graphene.Mutation):
         address.save()
         return address
 
+class SubscriptionCancel(graphene.Mutation):
+    class Arguments:
+        input = SubscriptionCancelInput(
+            required = True,
+            description="Fields required to cancel a Subscription."
+        )
+    subscription = graphene.Field(Subscription)
+
+    @classmethod
+    def mutate(cls, root, info, input=None):
+        user = info.context.user
+        # get primary key from global id
+        _, pk = from_global_id(input.subscription_id)
+        # get the subscription using pk
+        subscription = models.Subscription.objects.get(pk=pk)
+        #update status of subscription to cancelled
+        subscription.status = SubscriptionStatus.CANCELED
+        # save the updated subscription object in the db
+        subscription.save()
+        # Notice we return an instance of this mutation
+        return SubscriptionCancel(subscription=subscription)
+
 class SubscriptionMutations(graphene.ObjectType):
     subscription_create = SubscriptionCreate.Field()
+    subscription_cancel = SubscriptionCancel.Field()
