@@ -25,9 +25,10 @@ class SubscriptionCreateInput(graphene.InputObjectType):
     billing_address_id = graphene.ID(required=True, description="billing address id")
     variant_id = graphene.ID(required=True, description="Shipping method.")
     quantity = graphene.Int(required=True)
-    frequency = graphene.Argument(
+    frequency_period = graphene.Argument(
             SubscriptionFrequencyEnum, required=True, description="Subscription Frequency"
     )
+    frequency_units = graphene.Int(required=True)
     token_customer_id = graphene.ID(required=True, description="TokenCustomerID")
 
 class SubscriptionCancelInput(graphene.InputObjectType):
@@ -61,7 +62,7 @@ class SubscriptionCreate(graphene.Mutation):
         shipping_address.save()
 
         today = date.today()
-        next_order_date = get_next_order_date(today, input.frequency)
+        next_order_date = get_next_order_date(today, input.frequency_period, input.frequency_units)
         # billing_address= cls.get_address(input.billing_address),
         # shipping_address= cls.get_address(input.shipping_address),
 
@@ -73,7 +74,8 @@ class SubscriptionCreate(graphene.Mutation):
             quantity=input.quantity,
             user=user,
             token_customer_id=input.token_customer_id,
-            frequency=input.frequency,
+            frequency_period=input.frequency_period,
+            frequency_units=input.frequency_units,
             next_order_date=next_order_date
         )
         subscription.save()
