@@ -252,6 +252,15 @@ class ProductQueries(graphene.ObjectType):
         description="List of top selling products.",
     )
 
+    trending_products = PrefetchingConnectionField(
+        ProductVariant,
+        period=graphene.Argument(
+            ReportingPeriod, required=True, description="Span of time."
+        ),
+        description="List of top selling products.",
+    )
+    
+
     def resolve_attributes(self, info, **kwargs):
         return resolve_attributes(info, **kwargs)
 
@@ -313,6 +322,9 @@ class ProductQueries(graphene.ObjectType):
 
     @permission_required(ProductPermissions.MANAGE_PRODUCTS)
     def resolve_report_product_sales(self, *_args, period, **_kwargs):
+        return resolve_report_product_sales(period)
+
+    def resolve_trending_products(self, *_args, period, **_kwargs):
         return resolve_report_product_sales(period)
 
 
