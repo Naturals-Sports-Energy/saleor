@@ -472,24 +472,39 @@ AUTHENTICATION_BACKENDS = [
     "saleor.core.auth_backend.JSONWebTokenBackend",
     "graphql_jwt.backends.JSONWebTokenBackend",
     "django.contrib.auth.backends.ModelBackend",
-    
+    "social_core.backends.apple.AppleIdAuth"    
 ]
 
 # social-auth
 SOCIAL_AUTH_POSTGRES_JSONFIELD = True
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
+# Google auth
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get("SOCIAL_AUTH_GOOGLE_OAUTH2_KEY")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get("SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET")
 
+# Facebook auth
 SOCIAL_AUTH_FACEBOOK_KEY = os.environ.get("SOCIAL_AUTH_FACEBOOK_KEY")
 SOCIAL_AUTH_FACEBOOK_SECRET = os.environ.get("SOCIAL_AUTH_FACEBOOK_SECRET")
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
-
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
   'locale': 'ru_RU',
   'fields': 'email,name'
 }
+
+# Apple auth
+# TODO fill in the credentials
+SOCIAL_AUTH_APPLE_ID_CLIENT = 'com.naturalsportsenergy.natural'             # Your client_id com.application.your, aka "Service ID"
+SOCIAL_AUTH_APPLE_ID_TEAM = '3PFYK6UYNF'               # Your Team ID, ie K2232113
+SOCIAL_AUTH_APPLE_ID_KEY = '1564549250'                # Your Key ID, ie Y2P99J3N81K
+SOCIAL_AUTH_APPLE_ID_SECRET = """
+-----BEGIN PRIVATE KEY-----
+MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgQvBUFrjlLT9sSyMN
+NEsOMW8Cjbks22r4tcKjVd10UJagCgYIKoZIzj0DAQehRANCAASBC6e6Y4Ia6moq
+UX7XS+tSQ0CuQQdilVi3A/vvdUO0x6cWOVNfZtjB5i4a9irZECSYev/ZYg98C2nI
+0wv2mqgX
+-----END PRIVATE KEY-----"""
+SOCIAL_AUTH_APPLE_ID_SCOPE = ['email', 'name']
 
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
