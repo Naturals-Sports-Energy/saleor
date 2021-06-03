@@ -5,6 +5,7 @@ from django.conf import settings
 
 def sign(date):
     SECRET_KEY = settings.SECRET_KEY
+    date = str(date).encode()
     m = hmac.new(SECRET_KEY.encode(), digestmod=hashlib.sha256)
     m.update(date)
     m.hexdigest()
@@ -12,6 +13,5 @@ def sign(date):
 
 def verify(hash):
     date = datetime.today().date()
-    date = str(date).encode()
     good_sig = sign(date)
     return compare_digest(good_sig, hash.encode())

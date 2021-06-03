@@ -17,6 +17,7 @@ urlpatterns = [
     url(r"forgot-password/", views.forgot_password),
     url(r"sign-in-google/", views.sign_in_google),
     url(r"access-token/", views.access_token),
+    url(r"qr-code/", views.qr_code),
     url(r"soap/", views.soap),
     url('', include('social_django.urls', namespace='social')),
     url(r"^feeds/", include((feed_urls, "data_feeds"), namespace="data_feeds")),

@@ -1,6 +1,8 @@
 import os
+import logging
 
 from django.template.response import TemplateResponse
+from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseForbidden
 from django.http import HttpResponseRedirect
 from django.conf import settings
@@ -13,6 +15,15 @@ import hashlib
 from apiclient import discovery
 import httplib2
 from oauth2client import client
+from django.shortcuts import render
+import qrcode
+import qrcode.image.svg
+from io import BytesIO
+from ..graphql.attendance.mutations import sign
+from datetime import datetime
+from django.contrib.auth.decorators import login_required
+
+logger = logging.getLogger(__name__)
 
 GRAPHQL_URL = os.environ.get("GRAPHQL_URL", "http://0.0.0.0:8000/graphql/")
 
@@ -344,3 +355,53 @@ def soap(request):
     print(response.content)
 
     return HttpResponse()
+
+# @login_required
+def qr_code(request):
+    context = {}
+    if request.method == "GET":
+        token = unquote(request.GET.get('token'))
+        logger.debug("token: %s", token)
+        if authenticate(token):
+            factory = qrcode.image.svg.SvgImage
+            date = datetime.today().date()
+            logger.debug("date: %s", date)
+            hash = sign(date)
+            logger.debug("hash: %s", hash)
+            img = qrcode.make(hash, image_factory=factory, box_size=20)
+            stream = BytesIO()
+            img.save(stream)
+            context["svg"] = stream.getvalue().decode()
+
+            return render(request, 'qr_code.html', context=context)
+        else:
+            return HttpResponseForbidden()
+
+def authenticate(token):
+    headers = {
+        "Authorization" : "JWT {}".format(token)
+    }
+    
+    query = '''
+    query me{
+        me{
+            isStaff
+            isActive
+        }
+    }
+    '''
+    json = {
+        "query" : query
+    }
+
+    URL = GRAPHQL_URL
+    response = requests.post(url=URL, json=json, headers=headers)
+    print(response)
+    json_response = response.json()
+    json_response = json_response["data"]["me"]
+    print(json_response)
+    logger.debug("isStaff: %s, isActive: %s",json_response.get("isStaff"),json_response.get("isActive") )
+    if json_response.get("isStaff") and json_response.get("isActive"):
+        return True
+
+    return False
