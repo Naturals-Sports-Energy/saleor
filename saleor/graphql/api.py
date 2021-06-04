@@ -4,6 +4,7 @@ from .account.mutations.social_auth import OAuthMutations
 from .subscription.mutations.subscriptions import SubscriptionMutations
 from .attendance.mutations.mutations import AttendanceMutations
 from .subscription.schema import SubscriptionQueries
+from .attendance.schema import AttendanceQueries
 from .account.schema import AccountMutations, AccountQueries
 from .app.schema import AppMutations, AppQueries
 from .checkout.schema import CheckoutMutations, CheckoutQueries
@@ -27,6 +28,7 @@ from .webhook.schema import WebhookMutations, WebhookQueries
 
 
 class Query(
+    AttendanceQueries,
     SubscriptionQueries,
     AccountQueries,
     AppQueries,
