@@ -22,6 +22,7 @@ from io import BytesIO
 from ..graphql.attendance.mutations import sign
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
+from saleor.attendance.models import Attendance
 
 logger = logging.getLogger(__name__)
 
@@ -405,3 +406,28 @@ def authenticate(token):
         return True
 
     return False
+
+def attendance(request):
+    if request.method == "GET":
+        #get date from params or use today's date
+        date = request.GET.get('date',datetime.today().date())
+        logger.debug("date : %s",date)
+
+        #get names of users present on the given date
+        attendees = Attendance.objects.filter(date=date)
+
+        attendance_list = []
+        for attendee in attendees:
+            obj = {}
+            obj["name"] = "{} {}".format(attendee.user.first_name, attendee.user.last_name)
+            obj["email"] = attendee.user.email
+            obj["time"] = attendee.time.strftime("%I:%M:%S %p")
+            attendance_list.append(obj)
+
+        return_data = {
+            "attendance" : attendance_list
+        }
+
+        return_data = json.dumps(return_data)
+        
+        return HttpResponse(return_data, content_type='application/json')
