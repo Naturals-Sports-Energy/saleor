@@ -23,6 +23,7 @@ from ..graphql.attendance.mutations import sign
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from saleor.attendance.models import Attendance
+from .helper import authenticate
 
 logger = logging.getLogger(__name__)
 
@@ -361,8 +362,11 @@ def soap(request):
 def qr_code(request):
     context = {}
     if request.method == "GET":
-        token = unquote(request.GET.get('token'))
-        logger.debug("token: %s", token)
+        try:
+            token = unquote(request.GET.get('token'))
+            logger.debug("token: %s", token)
+        except:
+            return HttpResponse('Unauthorized', status=401)
         if authenticate(token):
             factory = qrcode.image.svg.SvgImage
             date = datetime.today().date()
@@ -378,34 +382,34 @@ def qr_code(request):
         else:
             return HttpResponseForbidden()
 
-def authenticate(token):
-    headers = {
-        "Authorization" : "JWT {}".format(token)
-    }
+# def authenticate(token):
+#     headers = {
+#         "Authorization" : "JWT {}".format(token)
+#     }
     
-    query = '''
-    query me{
-        me{
-            isStaff
-            isActive
-        }
-    }
-    '''
-    json = {
-        "query" : query
-    }
+#     query = '''
+#     query me{
+#         me{
+#             isStaff
+#             isActive
+#         }
+#     }
+#     '''
+#     json = {
+#         "query" : query
+#     }
 
-    URL = GRAPHQL_URL
-    response = requests.post(url=URL, json=json, headers=headers)
-    print(response)
-    json_response = response.json()
-    json_response = json_response["data"]["me"]
-    print(json_response)
-    logger.debug("isStaff: %s, isActive: %s",json_response.get("isStaff"),json_response.get("isActive") )
-    if json_response.get("isStaff") and json_response.get("isActive"):
-        return True
+#     URL = GRAPHQL_URL
+#     response = requests.post(url=URL, json=json, headers=headers)
+#     print(response)
+#     json_response = response.json()
+#     json_response = json_response["data"]["me"]
+#     print(json_response)
+#     logger.debug("isStaff: %s, isActive: %s",json_response.get("isStaff"),json_response.get("isActive") )
+#     if json_response.get("isStaff") and json_response.get("isActive"):
+#         return True
 
-    return False
+#     return False
 
 def attendance(request):
     if request.method == "GET":
