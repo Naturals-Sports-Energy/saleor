@@ -33,5 +33,7 @@ dist/
 /static/
 /venv
 
+celerybeat-schedule
+
 # Exported results file
 django-queries-results.html
