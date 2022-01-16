@@ -5,6 +5,16 @@ import logging
 import json
 from urllib.parse import urljoin
 
+EWAY_USERNAME = os.environ.get("EWAY_USERNAME")
+EWAY_PASSWORD = os.environ.get("EWAY_PASSWORD")
+USE_SANDBOX = os.environ.get("USE_SANDBOX")
+EWAY_URL = "https://api.sandbox.ewaypayments.com/"
+
+if USE_SANDBOX:
+    EWAY_URL = "https://api.sandbox.ewaypayments.com/"
+else :
+    EWAY_URL = "https://api.ewaypayments.com/"
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -430,9 +440,9 @@ data = {
 }
 
 response = api_post_request(
-    url="https://api.sandbox.ewaypayments.com/AccessCodes",
+    url= EWAY_URL+"AccessCodes",
     headers=None, json=data,
-    auth=("F9802C65WIIJoC71srjdgq5kiMuTHDnRDK3ror9fXmZJzcH/LDTElbYEq0g22XW9cfEe+0","Fmv4KH8y")
+    auth=(EWAY_USERNAME,EWAY_PASSWORD)
 )
 
 AccessCode = response["AccessCode"]

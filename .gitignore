@@ -37,3 +37,4 @@ celerybeat-schedule
 
 # Exported results file
 django-queries-results.html
+common.env

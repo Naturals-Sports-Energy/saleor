@@ -19,6 +19,13 @@ EMAIL = os.environ.get("USERNAME")
 PASSWORD = os.environ.get("PASSWORD")
 EWAY_USERNAME = os.environ.get("EWAY_USERNAME")
 EWAY_PASSWORD = os.environ.get("EWAY_PASSWORD")
+USE_SANDBOX = os.environ.get("USE_SANDBOX")
+EWAY_URL = "https://api.sandbox.ewaypayments.com/"
+
+if USE_SANDBOX:
+    EWAY_URL = "https://api.sandbox.ewaypayments.com/"
+else :
+    EWAY_URL = "https://api.ewaypayments.com/"
 
 logger = get_task_logger(__name__)
 
@@ -342,7 +349,7 @@ def get_access_code(subscription, total_price):
         "TransactionType": "Recurring"
     }
     response = api_post_request(
-        url="https://api.sandbox.ewaypayments.com/AccessCodes",
+        url= EWAY_URL+"AccessCodes",
         json=data,
         auth=(EWAY_USERNAME, EWAY_PASSWORD)
     )
@@ -367,7 +374,7 @@ def check_payment_status(AccessCode, order_token, order_id, token):
         EWAY_USERNAME,
         EWAY_PASSWORD
     )
-    URL = urljoin(urljoin("https://api.sandbox.ewaypayments.com/",'AccessCode/'),AccessCode)
+    URL = urljoin(urljoin(EWAY_URL,'AccessCode/'),AccessCode)
     response = requests.get(
         url=URL,
         auth=USER
