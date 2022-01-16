@@ -19,7 +19,7 @@ EMAIL = os.environ.get("USERNAME")
 PASSWORD = os.environ.get("PASSWORD")
 EWAY_USERNAME = os.environ.get("EWAY_USERNAME")
 EWAY_PASSWORD = os.environ.get("EWAY_PASSWORD")
-USE_SANDBOX = os.environ.get("USE_SANDBOX")
+USE_SANDBOX = os.getenv("USE_SANDBOX", 'True').lower() not in ('false', '0', 'f')
 EWAY_URL = "https://api.sandbox.ewaypayments.com/"
 
 if USE_SANDBOX:
