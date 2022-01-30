@@ -4,6 +4,8 @@ services:
   api:
     ports:
       - 8000:8000
+    expose: 
+      - 8000
     build:
       context: ./
       dockerfile: ./Dockerfile
@@ -27,6 +29,30 @@ services:
       - JAEGER_AGENT_HOST=jaeger
       - STOREFRONT_URL=http://localhost:3000/
       - DASHBOARD_URL=http://localhost:9000/
+  nginx:
+    image: nginx:1.13
+    restart: unless-stopped
+    volumes:
+      - ./rproxy/nginx:/etc/nginx/conf.d
+      # - ./rproxy/certbot/conf:/etc/letsencrypt
+      # - ./rproxy/certbot/www:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:  # <-- wait for djangoapp to be "ready" before starting this service
+      - api    
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    networks:  # <-- here
+      - saleor-backend-tier
+
+  # certbot:
+  #   image: certbot/certbot
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./rproxy/certbot/conf:/etc/letsencrypt
+  #     - ./rproxy/certbot/www:/var/www/certbot
+  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
 
   redis:
     image: library/redis:5.0-alpine
