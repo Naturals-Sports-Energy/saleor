@@ -2,7 +2,7 @@ from dateutil.relativedelta import relativedelta
 
 def get_next_order_date(date, frequency_period, frequency_units):
     if frequency_period=="WEEKLY":
-        delta = relativedelta(weeks=1)
+        delta = relativedelta(days=1)
     elif frequency_period=="MONTHLY":
         delta = relativedelta(months=1)
 
